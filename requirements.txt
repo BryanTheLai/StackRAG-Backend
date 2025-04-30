@@ -4,6 +4,6 @@ PyMuPDF==1.25.3
 python-dotenv==1.1.0
 scikit-learn==1.6.1
 openai==1.76.0
-asyncpg==0.30.0
 supabase==2.15.1
 PyYAML==6.0.2
+chonkie==1.0.6
