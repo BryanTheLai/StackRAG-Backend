@@ -88,47 +88,33 @@ class FinancialDocParser:
             future_to_page = {}
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                  for page_data in pages_data:
-                     # Submit each page task to the executor
                      future = executor.submit(self._process_single_page, page_data)
-                     # Store the future and the original page data for results processing
                      future_to_page[future] = page_data
 
 
             results = [] # List to store processed markdown (or error placeholder) for each page, with page_num
-            # Collect results as they complete
             for future in concurrent.futures.as_completed(future_to_page):
                 page_data = future_to_page[future]
                 page_num = page_data["page_num"] # Get original page number back (0-indexed)
 
                 try:
-                    # Get the result from the completed future
-                    # This result will be the markdown string (or error placeholder) from _process_single_page
                     markdown_result = future.result()
-                    # Store the result along with the page number for later sorting
                     results.append((page_num, markdown_result))
                 except Exception as exc:
-                    # This catches exceptions *thrown by _process_single_page* that were not handled internally
-                    # Given _process_single_page handles its own retries and errors, this case should be less frequent
                     print(f'Page {page_num + 1} task failed unexpectedly in executor: {exc}')
-                    # Add a clear error placeholder in the results list for this page
-                    # Use the original 0-indexed page_num for sorting
                     results.append((page_num, f"\n\n[FATAL ERROR processing Page {page_num+1}: {exc}]\n\n"))
 
 
             # Sort results by original page number to reconstruct document order
-            results.sort(key=lambda x: x) # Sort by the first element of the tuple (0-indexed page_num)
+            results.sort(key=lambda x: x)
 
             # Combine markdown content wrapping each page with separators
             combined_markdown = ""
             for page_num, markdown_text in results:
-                 # Create the new page separators using the 1-based page number
                  start_separator = f"\n\n--- Page {page_num+1} Start ---\n\n"
                  end_separator = f"\n\n--- Page {page_num+1} End ---\n\n"
-                 # Append the start separator, the page's markdown text, and the end separator
                  combined_markdown += start_separator + markdown_text.strip() + end_separator # strip page text here too
 
-            # Return the combined markdown and other details
-            # Strip overall combined markdown just in case
             return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
         except fitz.fitz.FileDataError:
