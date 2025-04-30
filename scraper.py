@@ -5,7 +5,7 @@ from datetime import datetime
 # --- Configuration ---
 # HARDCODE the exact, full path to the directory you want to scan.
 # Use a raw string (r"...") or double backslashes (\\) for Windows paths.
-TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\document-llm-v2\src"
+TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\AI-CFO-FYP"
 
 # Set the name for the output file.
 # It will be created in the directory where you run the script.
@@ -14,20 +14,26 @@ OUTPUT_FILENAME = "consolidated_code.md"
 
 # Optional: List of directory names to completely skip during scanning
 # Add any other folders within the TARGET_DIRECTORY you want to ignore.
-DIRECTORIES_TO_SKIP = {'.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules'}
+DIRECTORIES_TO_SKIP = {'data','.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules', 'output_folder'}
+
+# Optional: List of specific file names (case-sensitive) to completely skip
+# regardless of which directory they are in.
+FILES_TO_SKIP = {'__init__.py', 'setup.py', '.env', '.env.example', 'README.md'}
 # --- End Configuration ---
 
 
-def consolidate_to_markdown(root_dir, output_filepath):
+def consolidate_to_markdown(root_dir, output_filepath, dirs_to_skip, files_to_skip):
     """
     Walks through the specified root directory and consolidates file contents
     into a single Markdown file using triple-backtick code blocks.
 
-    Skips specified directories and hidden files/folders.
+    Skips specified directories and specific files by name, and hidden files/folders.
 
     Args:
         root_dir (str): The absolute path to the directory to scan.
         output_filepath (str): The absolute path to the output Markdown file.
+        dirs_to_skip (set): A set of directory names to skip.
+        files_to_skip (set): A set of file names to skip.
     """
     abs_root_dir = os.path.abspath(root_dir)
 
@@ -41,7 +47,8 @@ def consolidate_to_markdown(root_dir, output_filepath):
 
     print(f"Scanning directory: {abs_root_dir}")
     print(f"Output file:      {output_filepath}")
-    print(f"Skipping dirs:    {', '.join(DIRECTORIES_TO_SKIP) if DIRECTORIES_TO_SKIP else 'None'}")
+    print(f"Skipping dirs:    {', '.join(dirs_to_skip) if dirs_to_skip else 'None'}")
+    print(f"Skipping files:   {', '.join(files_to_skip) if files_to_skip else 'None'}") # Added print for new list
     print("-" * 30)
 
     try:
@@ -52,7 +59,7 @@ def consolidate_to_markdown(root_dir, output_filepath):
             # os.walk efficiently traverses the directory tree
             for dirpath, dirnames, filenames in os.walk(abs_root_dir, topdown=True):
                 # Modify dirnames in-place to prevent os.walk from descending into skipped directories
-                dirnames[:] = [d for d in dirnames if not d.startswith('.') and d not in DIRECTORIES_TO_SKIP]
+                dirnames[:] = [d for d in dirnames if not d.startswith('.') and d not in dirs_to_skip]
 
                 # Sort filenames for consistent order (optional, but nice)
                 filenames.sort()
@@ -61,6 +68,12 @@ def consolidate_to_markdown(root_dir, output_filepath):
                     # Skip hidden files
                     if filename.startswith('.'):
                        continue
+                    # --- Modification: Skip files in the exclusion list ---
+                    if filename in files_to_skip:
+                       print(f"  Skipping file: {filename}") # Optional: Add log for skipped files
+                       continue
+                    # --- End Modification ---
+
 
                     full_path = os.path.join(dirpath, filename)
                     # Calculate the relative path from the root directory being scanned
@@ -131,8 +144,8 @@ if __name__ == "__main__":
     print(f"Target directory:   {target_dir_path}")
     print(f"Output file will be created at: {output_file_path}")
 
-    # Run the consolidation function
-    success = consolidate_to_markdown(target_dir_path, output_file_path)
+    # Run the consolidation function, passing the new exclusion list
+    success = consolidate_to_markdown(target_dir_path, output_file_path, DIRECTORIES_TO_SKIP, FILES_TO_SKIP)
 
     print("-" * 30)
     if success:
