@@ -6,8 +6,7 @@ class DocType(Enum):
     """Enumerates supported document file types."""
     PDF = "pdf"
     DOCX = "docx"
-    # Add other types like XLSX, CSV if supported later
-    UNKNOWN = "unknown" # Fallback for unsupported types
+    UNKNOWN = "unknown"
 
 class FinancialDocSpecificType(Enum):
     """Enumerates specific types of financial documents."""
@@ -32,10 +31,6 @@ class FinancialDocSpecificType(Enum):
 
     # Generic/Catch-all
     GENERAL_REPORT = "General Report"
-    STATEMENT = "Statement" # For documents titled "Statement" without more detail
-    OTHER = "Other" # If the AI can't classify precisely
-    UNKNOWN = "Unknown" # If parsing/extraction fails to identify type
-
-# Note: Enums provide a controlled vocabulary.
-# When storing in the database (which uses TEXT columns), we'll store
-# the `.value` of the enum member (the string like "pdf" or "Balance Sheet").
+    STATEMENT = "Statement"
+    OTHER = "Other"
+    UNKNOWN = "Unknown"

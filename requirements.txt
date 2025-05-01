@@ -7,3 +7,4 @@ openai==1.76.0
 supabase==2.15.1
 PyYAML==6.0.2
 chonkie==1.0.6
+pydantic==2.11.4
