@@ -5,7 +5,7 @@ from datetime import datetime
 # --- Configuration ---
 # HARDCODE the exact, full path to the directory you want to scan.
 # Use a raw string (r"...") or double backslashes (\\) for Windows paths.
-TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\AI-CFO-FYP"
+TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\AI-CFO-FYP\src"
 
 # Set the name for the output file.
 # It will be created in the directory where you run the script.
