@@ -109,7 +109,8 @@ class SupabaseService:
         filename: str,
         storage_path: str,
         doc_type: str, # e.g., 'pdf'
-        metadata: FinancialDocumentMetadata # Pydantic model from extractor
+        metadata: FinancialDocumentMetadata, 
+        full_markdown_content: str
     ) -> Optional[uuid.UUID]:
         """
         Saves the main document record to the 'documents' table.
@@ -120,7 +121,7 @@ class SupabaseService:
             storage_path: The path where the file is stored in Supabase Storage.
             doc_type: The determined file type ('pdf', etc.).
             metadata: The FinancialDocumentMetadata object.
-
+            full_markdown_content: The combined markdown from the parser.
         Returns:
             The generated UUID (document_id) of the new record if successful, None otherwise.
         """
@@ -139,6 +140,8 @@ class SupabaseService:
                 "doc_year": metadata.doc_year if metadata.doc_year != -1 else None, # Convert placeholder year
                 "doc_quarter": metadata.doc_quarter if metadata.doc_quarter != -1 else None, # Convert placeholder quarter
                 "doc_summary": metadata.doc_summary,
+                "full_markdown_content": full_markdown_content,
+
                 # Add other JSONB metadata if needed (e.g., currency, units if extracted)
                 "metadata": {"currency": None, "units": None}, # Placeholder JSONB
                 "status": "processing" # Initial status after metadata extraction

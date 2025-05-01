@@ -28,6 +28,9 @@ create table documents (
     doc_year integer,
     doc_quarter integer, -- 1-4 or null
 
+    -- Full Markdown Content (NEW COLUMN)
+    full_markdown_content text,
+
     -- Extracted Metadata (JSONB for less structured/frequently filtered data)
     doc_summary text,
     metadata jsonb, -- e.g., currency, units, sent_by, sent_to, other companies mentioned
