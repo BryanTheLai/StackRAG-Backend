@@ -1,10 +1,8 @@
-Okay, let's streamline and update the technical reference guide to reflect the move to Supabase, incorporate multi-tenancy and authentication, and simplify the overall presentation.
 
-Here's the revised documentation:
+# AI CFO Assistant: Technical Reference Guide
 
----
-
-# AI CFO Assistant: Technical Reference Guide (Simplified)
+**Version:** 1.1
+**Date:** May 01, 2025
 
 ## Table of Contents
 
@@ -19,315 +17,343 @@ Here's the revised documentation:
     *   [1.8 Document Purpose](#18-document-purpose)
 *   [Chapter 2: System Architecture](#chapter-2-system-architecture)
     *   [2.1 Architecture Design](#21-architecture-design)
-    *   [2.2 Core Pipeline Diagram](#22-core-pipeline-diagram)
+    *   [2.2 Ingestion Pipeline Diagram (Conceptual)](#22-ingestion-pipeline-diagram-conceptual)
     *   [2.3 Component Roles](#23-component-roles)
-    *   [2.4 Data Flow](#24-data-flow)
-*   [Chapter 3: Data Ingestion](#chapter-3-data-ingestion)
-    *   [3.1 Input: Financial PDFs](#31-input-financial-pdfs)
-    *   [3.2 Parsing with AI](#32-parsing-with-ai)
-    *   [3.3 Structuring Data](#33-structuring-data)
-    *   [3.4 Breaking into Chunks](#34-breaking-into-chunks)
-*   [Chapter 4: Embedding & Storage](#chapter-4-embedding--storage)
-    *   [4.1 Embedding Strategy](#41-embedding-strategy)
-    *   [4.2 Database: Supabase](#42-database-supabase)
-    *   [4.3 Data Structure](#43-data-structure)
-    *   [4.4 Efficient Search](#44-efficient-search)
-    *   [4.5 Adding Data](#45-adding-data)
-*   [Chapter 5: Retrieval Process](#chapter-5-retrieval-process)
+    *   [2.4 Data Flow (Ingestion)](#24-data-flow-ingestion)
+*   [Chapter 3: Data Ingestion Pipeline](#chapter-3-data-ingestion-pipeline)
+    *   [3.1 Input: Financial PDFs & User Context](#31-input-financial-pdfs--user-context)
+    *   [3.2 Parsing with Multimodal AI (`FinancialDocParser`)](#32-parsing-with-multimodal-ai-financialdocparser)
+    *   [3.3 Metadata Extraction (`MetadataExtractor`)](#33-metadata-extraction-metadataextractor)
+    *   [3.4 Sectioning (`Sectioner`)](#34-sectioning-sectioner)
+*   [Chapter 4: Embedding & Storage (Supabase)](#chapter-4-embedding--storage-supabase)
+    *   [4.1 Chunking (`ChunkingService`)](#41-chunking-chunkingservice)
+    *   [4.2 Embedding Strategy (`EmbeddingService`)](#42-embedding-strategy-embeddingservice)
+    *   [4.3 Supabase Backend](#43-supabase-backend)
+    *   [4.4 Database Structure](#44-database-structure)
+    *   [4.5 Storage Structure & Security](#45-storage-structure--security)
+    *   [4.6 Persistence (`SupabaseService`)](#46-persistence-supabaseservice)
+*   [Chapter 5: Retrieval Process (Future Work)](#chapter-5-retrieval-process-future-work)
     *   [5.1 How Retrieval Works](#51-how-retrieval-works)
     *   [5.2 Handling Complex Queries](#52-handling-complex-queries)
-    *   [5.3 Identifying Key Details](#53-identifying-key-details)
-    *   [5.4 Filtering by Details](#54-filtering-by-details)
-    *   [5.5 Finding Similar Text](#55-finding-similar-text)
-    *   [5.6 Refining Results](#56-refining-results)
+    *   [5.3 Identifying Key Details & Filters](#53-identifying-key-details--filters)
+    *   [5.4 Filtering by Details (Inc. User ID)](#54-filtering-by-details-inc-user-id)
+    *   [5.5 Finding Similar Text (Vector Search)](#55-finding-similar-text-vector-search)
+    *   [5.6 Refining Results (Re-ranking)](#56-refining-results-re-ranking)
     *   [5.7 Final Selection](#57-final-selection)
-*   [Chapter 6: Answer Generation & Tools](#chapter-6-answer-generation--tools)
+*   [Chapter 6: Answer Generation & Tools (Future Work)](#chapter-6-answer-generation--tools-future-work)
     *   [6.1 Choosing the AI Model](#61-choosing-the-ai-model)
     *   [6.2 Preparing Context](#62-preparing-context)
-    *   [6.3 Guiding the AI](#63-guiding-the-ai)
+    *   [6.3 Guiding the AI (Prompting)](#63-guiding-the-ai-prompting)
     *   [6.4 Using Calculation Tools](#64-using-calculation-tools)
-    *   [6.5 Managing Tool Use](#65-managing-tool-use)
-*   [Chapter 7: Final Output & Sources](#chapter-7-final-output--sources)
+    *   [6.5 Managing Tool Use (Function Calling)](#65-managing-tool-use-function-calling)
+*   [Chapter 7: Final Output & Sources (Future Work)](#chapter-7-final-output--sources-future-work)
     *   [7.1 Cleaning the Answer](#71-cleaning-the-answer)
     *   [7.2 Basic Checks](#72-basic-checks)
     *   [7.3 Showing Sources](#73-showing-sources)
-*   [Chapter 8: Evaluation](#chapter-8-evaluation)
+*   [Chapter 8: Evaluation (Future Work)](#chapter-8-evaluation-future-work)
     *   [8.1 Why Evaluate?](#81-why-evaluate)
     *   [8.2 Test Data](#82-test-data)
     *   [8.3 Creating Test Cases](#83-creating-test-cases)
     *   [8.4 Measuring Performance](#84-measuring-performance)
     *   [8.5 Automation](#85-automation)
     *   [8.6 Improving with Evaluation](#86-improving-with-evaluation)
-*   [Chapter 9: Building the System](#chapter-9-building-the-system)
+*   [Chapter 9: Building the System (Current State)](#chapter-9-building-the-system-current-state)
     *   [9.1 Technology Summary](#91-technology-summary)
-    *   [9.2 Key Libraries](#92-key-libraries)
+    *   [9.2 Key Libraries Used](#92-key-libraries-used)
     *   [9.3 Setup](#93-setup)
     *   [9.4 Configuration](#94-configuration)
     *   [9.5 Code Structure](#95-code-structure)
     *   [9.6 Version Control](#96-version-control)
-*   [Chapter 10: Monitoring & Logs](#chapter-10-monitoring--logs)
+*   [Chapter 10: Monitoring & Logs (Future Work)](#chapter-10-monitoring--logs-future-work)
     *   [10.1 Why Log?](#101-why-log)
     *   [10.2 Log Details](#102-log-details)
     *   [10.3 How Logging Works](#103-how-logging-works)
     *   [10.4 Using Logs](#104-using-logs)
 *   [Chapter 11: Running the System](#chapter-11-running-the-system)
-    *   [11.1 Demo Setup](#111-demo-setup)
+    *   [11.1 Testing Setup (Notebooks)](#111-testing-setup-notebooks)
     *   [11.2 Production Ideas](#112-production-ideas)
     *   [11.3 Handling More Users](#113-handling-more-users)
     *   [11.4 Managing Costs](#114-managing-costs)
 *   [Chapter 12: Next Steps](#chapter-12-next-steps)
-    *   [12.1 Based on Testing](#121-based-on-testing)
-    *   [12.2 Adding Features](#122-adding-features)
-    *   [12.3 User Experience](#123-user-experience)
+    *   [12.1 Immediate Next Steps](#121-immediate-next-steps)
+    *   [12.2 Future Enhancements](#122-future-enhancements)
 *   [Appendix](#appendix)
-    *   [A. Example Instructions for AI Models](#a-example-instructions-for-ai-models)
-    *   [B. Database Structure (SQL)](#b-database-structure-sql)
-    *   [C. Calculation Tool Instructions (JSON)](#c-calculation-tool-instructions-json)
-    *   [D. Code Snippets (API Calls)](#d-code-snippets-api-calls)
-    *   [E. Key Terms](#e-key-terms)
+    *   [A. Example AI Prompts](#a-example-ai-prompts)
+    *   [B. Database Setup SQL (`database_setup.sql`)](#b-database-setup-sql-database_setupsql)
+    *   [C. Storage Setup SQL (`storage_setup.sql`)](#c-storage-setup-sql-storage_setupsql)
+    *   [D. Key Terms](#d-key-terms)
 
 ---
 
----
+## Chapter 1: Introduction
 
-# Chapter 1: Introduction
+### 1.1 Project Overview
 
-## 1.1 Project Overview
+This guide details the **AI CFO Assistant** ingestion pipeline. This system enables Small and Medium Businesses (SMEs) to securely upload their financial documents and receive reliable, context-aware answers to questions about their finances. It leverages Retrieval-Augmented Generation (RAG), AI Tool Use (Function Calling), and a robust backend built on Supabase.
 
-This guide explains how the **AI CFO Assistant** works. It's a project to help Small and Medium Businesses (SMEs) get clear, reliable answers from their financial documents. The system uses modern AI, specifically a method called RAG (Retrieval-Augmented Generation) along with AI models that can use external tools, to answer questions based *only* on the documents you provide.
+### 1.2 The Problem: Financial Insight Bottleneck
 
-## 1.2 The Problem: Financial Insight Bottleneck
+SMEs often struggle to extract timely insights from complex PDF financial reports. Data is siloed, difficult to search, and requires expertise to interpret, hindering informed decision-making.
 
-Getting useful insights from financial reports is hard for many SMEs. Reports are often PDFs, difficult to search, scattered across different files, and require financial know-how to fully understand. This means valuable information is locked away.
+### 1.3 The Solution: AI CFO Assistant
 
-## 1.3 The Solution: AI CFO Assistant
+The assistant provides a secure, intelligent interface to financial documents. Users upload reports; the system processes them; users ask questions in natural language. The system retrieves relevant information *only from the user's documents*, performs necessary calculations using validated tools, generates a factual answer, and cites the specific sources used.
 
-The Assistant acts as a smart interface for your financial reports. You upload your documents, and you can ask questions in simple English. The system then finds the right information, does any needed calculations, and gives you a direct answer, showing you exactly where it got the information.
+### 1.4 Core Design Goal: Reliability
 
-*   **Understand:** Figures out what your question means.
-*   **Find:** Pulls relevant parts from your uploaded documents.
-*   **Calculate:** Uses trusted tools for math.
-*   **Answer:** Creates a clear response using *only* the found information.
-*   **Show Sources:** Tells you which document sections were used.
+Accuracy and trustworthiness are paramount for financial data. The system prioritizes **Reliability** by:
 
-## 1.4 Core Design Goal: Reliability
+1.  **Grounded Answers:** Answers are derived solely from the user-provided documents.
+2.  **Accurate Calculations:** Math is performed by reliable, deterministic Python tools, not the LLM.
+3.  **Verifiable Sources:** Answers include citations linking back to specific document sections.
+4.  **Data Privacy:** User data is strictly isolated via multi-tenancy controls.
 
-Financial data is sensitive, so being right is crucial. The main goal is **Reliability**. We avoid AI making things up (hallucinations) by focusing on:
+### 1.5 Key Objectives
 
-1.  **Correct Numbers:** Figures are accurate, either directly from documents or calculated correctly by tools.
-2.  **Grounded Answers:** The answer comes *only* from the documents you provided, not from outside knowledge.
-3.  **Clear Sources:** You can see exactly which parts of which documents support the answer.
+*   Accurately parse and extract data from complex financial PDFs.
+*   Implement an effective RAG pipeline for information retrieval.
+*   Integrate reliable calculation tools via LLM Function Calling.
+*   Ensure AI answers are grounded in provided context and avoid hallucination.
+*   Establish an automated evaluation framework for reliability metrics.
+*   Build a functional Proof-of-Concept.
+*   **Implement secure multi-tenancy using user accounts and data isolation.**
 
-## 1.5 Key Objectives
+### 1.6 Scope
 
-*   Process complex financial PDFs accurately.
-*   Build a smart system that finds the right document sections.
-*   Use tools reliably for calculations via the AI.
-*   Make sure the AI only uses provided document context.
-*   Create a way to automatically test how reliable the system is.
-*   Build a basic working version.
-*   **New:** Add user accounts and keep each user's data separate (multi-tenancy).
+**In Scope (Ingestion Pipeline - Completed):**
 
-## 1.6 Scope
+*   Handling PDF financial reports.
+*   AI-driven text, layout, and metadata extraction (`FinancialDocParser`, `MetadataExtractor`).
+*   Structuring content as Markdown.
+*   Storing full extracted Markdown (`documents.full_markdown_content`).
+*   Segmenting Markdown into logical sections (`Sectioner`).
+*   Chunking section content (`ChunkingService` with `chonkie`).
+*   Generating context-aware embeddings (`EmbeddingService` with OpenAI).
+*   Securely storing original files, metadata, sections, chunks, and embeddings in Supabase (`SupabaseService`).
+*   Enforcing multi-tenancy via Supabase Auth (`user_id`) and RLS.
 
-**What's Included:**
+**In Scope (Future Work - RAG Query/API):**
 
-*   Handling standard PDF financial reports (Income, Balance, Cash Flow).
-*   Extracting text and tables using advanced AI.
-*   Turning extracted info into structured text (Markdown + metadata).
-*   Breaking down text into smart sections (chunks).
-*   Creating searchable data representations (embeddings).
-*   Storing and searching data in a database.
-*   Filtering results using document details (metadata).
-*   Refining search results with a re-ranker.
-*   Breaking down complex questions if needed.
-*   Generating answers using a capable AI model.
-*   Using tools for calculations (sum, average, ratio, percent change).
-*   Ensuring the AI stays grounded and refuses if info is missing.
-*   Showing where the information came from.
-*   Building automated reliability tests.
-*   Recording system activity (logging).
-*   Creating simple ways to interact (like a web page or command line).
-*   **New:** Handling user accounts and keeping data separate for each user/organization.
+*   Retrieval logic (filtering, vector search, re-ranking).
+*   Answer generation LLM integration with tool use.
+*   Calculation tool implementation.
+*   API layer (e.g., FastAPI) for user interaction (upload, query).
+*   User authentication handling in the API.
+*   Automated evaluation framework.
+*   System logging (to Supabase).
 
-**What's Not Included (Initially):**
+**Out of Scope (Initial):**
 
-*   Non-financial documents (legal, etc.).
-*   Scanned PDFs that need advanced image processing.
-*   Perfectly extracting *all* complex table details if the AI struggles.
-*   Connecting directly to live accounting systems.
-*   Providing financial advice or forecasts.
-*   Fancy data charts or visuals.
-*   Advanced security beyond user accounts and data separation.
-*   A full, polished app interface.
-*   Training the AI models ourselves (using existing ones via API).
-*   Advanced search features (like combined keyword/vector search).
-*   Spreadsheet files (.xlsx, .csv).
+*   Non-financial documents, non-PDF formats (DOCX, XLSX), heavily scanned PDFs.
+*   Direct integration with accounting software.
+*   Financial advice or forecasting.
+*   Advanced visualization.
+*   Highly polished UI/UX.
 
-## 1.7 Technology Overview
+### 1.7 Technology Overview
 
-*   **Main Code:** Python.
-*   **AI Models (LLMs):** Accessed through APIs (like Google Gemini) for parsing, understanding questions, and generating answers with tool use.
-*   **Embedding Model:** An API for creating searchable numerical representations of text (like Nomic via Fireworks AI).
-*   **Database & Backend:** **Supabase**. This gives us a PostgreSQL database for structured data and vector search (`pgvector`), plus built-in user accounts (Auth) and file storage (Storage).
-*   **Re-ranker:** A smaller AI model for refining search results, often run using a Python library locally or on cloud compute.
-*   **Key Python Libraries:** Tools for interacting with APIs, the database (Supabase client), handling text, managing settings, and running evaluations.
-*   **Interface (Optional):** Simple demo using libraries like Streamlit or just command-line scripts.
-*   **Evaluation:** Custom Python code to run tests using pre-set questions and expected answers.
+*   **Language:** Python 3.x
+*   **AI Models:**
+    *   Google Gemini API (`google-genai`): For multimodal parsing and structured metadata extraction.
+    *   OpenAI API (`openai`): For text embeddings (`text-embedding-3-small`).
+*   **Backend:** **Supabase**
+    *   Database: PostgreSQL with `pgvector` extension.
+    *   Authentication: Supabase Auth.
+    *   File Storage: Supabase Storage.
+*   **PDF Parsing:** `pymupdf` (Fitz)
+*   **Chunking:** `chonkie` (`RecursiveChunker`)
+*   **Data Validation:** `pydantic`
+*   **Configuration:** `.env` files (`python-dotenv`)
+*   **Key Python Libraries:** `supabase-py`, `google-genai`, `openai`, `pymupdf`, `chonkie`, `pydantic`.
 
-## 1.8 Document Purpose
+### 1.8 Document Purpose
 
-This document is a technical guide for the AI CFO Assistant project. It explains the design, how things work, and why certain choices were made. It's for developers, evaluators, and anyone wanting to understand the technology behind it.
+This technical reference guide documents the design, implementation, and rationale for the AI CFO Assistant's ingestion pipeline. It serves as a guide for developers and stakeholders involved in the project.
 
 ---
 
-# Chapter 2: System Architecture
+## Chapter 2: System Architecture
 
-## 2.1 Architecture Design
+### 2.1 Architecture Design
 
-The system is built around **RAG (Retrieval-Augmented Generation)** and **Function Calling**. RAG finds relevant info first, so the AI doesn't guess. Function Calling lets the AI use external tools (our Python code) for precise tasks like calculations.
+The system utilizes a modular, service-oriented architecture centered around a RAG pipeline with integrated Function Calling (Tool Use). Supabase provides the core backend infrastructure (DB, Auth, Storage), enabling secure multi-tenancy through user identification (`user_id`) and Row-Level Security (RLS). The ingestion pipeline focuses on preparing data for the RAG query process.
 
-This setup makes the system reliable by grounding the AI in your data and handling math accurately. It's also modular, meaning we can update parts (like switching AI models) without rebuilding everything.
+### 2.2 Ingestion Pipeline Diagram (Conceptual)
 
-**New:** The system also includes user **Authentication** and manages data to ensure one user's documents and questions are kept separate from another's (**Multi-tenancy**). This is built using Supabase's features.
+```mermaid
+graph LR
+    A[User Uploads PDF (via API)] --> B(Authenticate User);
+    B --> C{Get User ID};
+    C --> D[FinancialDocParser: PDF -> Markdown];
+    D --> E[MetadataExtractor: Markdown Snippet -> Metadata];
+    C --> F(SupabaseService);
+    D --> G[Sectioner: Markdown -> Sections];
+    E --> F; % Metadata needed for saving document
+    A --> F; % PDF Buffer needed for storage
+    D --> F; % Full Markdown needed for saving document
+    F -- Stores File --> H[Supabase Storage (User-Specific Path)];
+    F -- Saves Doc Record --> I[DB: documents table (with full_markdown)];
+    G --> J[ChunkingService: Sections -> Chunks];
+    E --> J; % Metadata needed for chunk enrichment
+    I -- Doc ID --> G; % Doc ID needed for sectioning
+    I -- Doc ID --> J; % Doc ID needed for chunking
+    C -- User ID --> G; % User ID needed for sectioning
+    C -- User ID --> J; % User ID needed for chunking
+    G -- Sections Data --> K(SupabaseService);
+    K -- Saves Sections --> L[DB: sections table];
+    J -- Chunks Data --> M[EmbeddingService: Augment Text & Embed];
+    L -- Section IDs --> J; % Section IDs needed for chunking
+    M -- Chunks w/ Embeddings --> N(SupabaseService);
+    N -- Saves Chunks --> O[DB: chunks table];
+    F -- Updates Status --> I; % Mark document as completed/failed
+```
 
-## 2.2 Core Pipeline Diagram
+*Note: The diagram shows the flow. The `IngestionPipeline` class orchestrates these calls.*
 
-## 2.3 Component Roles
+### 2.3 Component Roles
 
-*   **1. PDF Parser (AI Model):** Reads PDF content, including tables and layout, using a capable AI model (like Gemini Vision).
-*   **2. Format (Markdown+Metadata):** Converts parser output into a structured text format (Markdown) and pulls out key document details (metadata) like report type, date, and *user/organization ID*.
-*   **3. Break into Sections:** Splits the formatted text into smaller, logical chunks based on headings. Handles very large sections by splitting them further.
-*   **4. Create Embeddings:** Turns text chunks into numerical vectors using an Embedding AI model. Adds metadata text to the chunk before embedding for better search.
-*   **5. Save Data & Vectors (Supabase Postgres):** Stores all processed data (original text, metadata, embeddings) in the Supabase PostgreSQL database, ensuring each piece of data is linked to the **user/organization ID**.
-*   **6. User Authentication + Get User ID:** Confirms the user's identity and retrieves their unique ID or their organization's ID using Supabase Auth. This ID is crucial for ensuring data privacy in multi-tenancy.
-*   **7. Breakdown Query?:** Uses a smaller AI to check if the user's question needs to be broken into simpler steps (like comparing two periods).
-*   **8. Identify Filters:** Looks at the question (and the user ID) to find details like dates, report types, and the required user/organization ID that can filter the data search.
-*   **9. Filter Data (in DB):** Uses the identified filters, **including the user/organization ID**, to query the database and narrow down potential relevant sections.
-*   **10. Find Similar Text:** Performs a vector search in the database (within the filtered data) to find text chunks semantically similar to the user's question.
-*   **11. Map to Full Sections:** Groups the search results back to their original, larger sections.
-*   **12. Re-rank Relevance:** Uses a specific model (cross-encoder) to re-score the relevance of the candidate full sections, picking the best ones.
-*   **13. Assemble Context:** Gathers the text and metadata of the top re-ranked sections to create the input text for the main Answer AI.
-*   **14. Answer AI + Tool Use:** The main AI model (like Gemini 1.5 Pro) reads the context, understands the question, generates a natural language answer, and, importantly, asks to use calculation tools when needed. It uses tool instructions (Appendix C) to know how.
-*   **15. Calculation Tools:** Reliable Python functions that perform specific calculations (like ratios, sums) when the Answer AI requests them. They return results back to the AI.
-*   **16. Clean & Check:** Tidies up the AI's raw answer and runs basic checks (like confirming numbers appear in the source text).
-*   **17. Generate Sources:** Creates clear citations showing which document sections were used to answer the question.
-*   **Logging (Supabase Logs Table):** Records details of the query process (input, retrieved sections, AI interaction, tool use, output) in a dedicated database table for review and debugging, **linked to the user ID**.
+*   **Ingestion Pipeline Orchestrator (`pipeline.py`):** Manages the overall sequence of ingestion steps.
+*   **AI Clients (`llm/`):** Interface with Gemini and OpenAI APIs.
+*   **`FinancialDocParser`:** Converts PDF to structured Markdown using multimodal AI.
+*   **`MetadataExtractor`:** Extracts document-level metadata (type, company, dates, summary) from Markdown snippet using text LLM and Pydantic schema.
+*   **`Sectioner`:** Splits full Markdown into logical sections based on headings and page markers.
+*   **`ChunkingService`:** Breaks section Markdown into smaller chunks using `chonkie` and copies metadata.
+*   **`EmbeddingService`:** Generates vector embeddings for chunks using context-augmented text.
+*   **`SupabaseService`:** Handles all interactions with Supabase (DB inserts/updates, Storage uploads), ensuring `user_id` is applied correctly for RLS.
+*   **Supabase Auth:** Manages user accounts and authentication, providing the crucial `user_id`.
+*   **Supabase Storage:** Stores original PDF files securely, segregated by `user_id`.
+*   **Supabase PostgreSQL:** Stores structured data (`documents`, `sections`, `chunks`) with `pgvector` for embeddings and RLS enabled.
 
-## 2.4 Data Flow
+### 2.4 Data Flow (Ingestion)
 
-*   **Adding a Document:** User logs in -> Document is processed (Parsed, Formatted, Chunked, Embedded) -> Data (text, metadata, embeddings) is saved in Supabase, *tagged with the user's/organization's ID*.
-*   **Asking a Question:** User logs in -> Question comes in with user credentials -> User ID is verified -> Question is analyzed and filters (including User ID) are found -> Database is queried, filtering *only* for the user's data -> Relevant sections are retrieved, re-ranked, and assembled -> Answer AI generates response using the context and tools -> Answer is cleaned and sources are added -> Result shown to user -> Process details are logged *with the User ID*.
-
----
-
-# Chapter 3: Data Ingestion
-
-## 3.1 Input: Financial PDFs
-
-The system starts with financial reports like Income Statements, Balance Sheets, and Cash Flow statements, usually in PDF format. These can look very different and contain tricky layouts, especially tables. We handle these variations as part of the process.
-
-## 3.2 Parsing with AI
-
-To read these complex PDFs, we use a powerful AI model (like Gemini Vision) that can understand both text and visual layout. We give the AI the PDF and tell it exactly what we want back: all the text, organized by headings, with tables clearly marked, and important document details pulled out.
-
-*   We interact with this AI via its API.
-*   Prompts (our instructions to the AI) are key to getting good results.
-*   We handle potential API errors or usage limits.
-
-## 3.3 Structuring Data
-
-The AI's output needs to be consistent. We convert it into **Markdown** format. At the top of each Markdown file, we add key document details (like report type, dates, and importantly, the **User ID / Organization ID** it belongs to) in a structured format called **YAML Front Matter**. This makes it easy to identify and filter documents later.
-
-## 3.4 Breaking into Chunks
-
-Large documents are broken into smaller, meaningful pieces called chunks. We split the Markdown primarily based on headings (like `# Revenue` or `## Operating Expenses`) because these usually mark logical sections. If a section is still too big for the Embedding AI, we split it further, ensuring we keep track of which larger section each small chunk came from.
-
----
-
-# Chapter 4: Embedding & Storage
-
-After breaking documents into chunks and adding metadata, we turn them into a format computers can easily search by meaning: vector embeddings. We store these embeddings and the original text in our database.
-
-## 4.1 Embedding Strategy
-
-A simple text-to-vector conversion isn't enough because the same words can mean different things in different contexts (e.g., "Revenue" from Q1 2023 vs Q1 2024). To add context, we add important details like the report type and date (from the YAML metadata) to the chunk's text *before* creating the embedding. This helps the vector capture the context, making search more accurate.
-
-*   We use a high-quality Embedding AI model for this, accessed via an API.
-*   Adding metadata helps distinguish similar text from different documents or periods.
-*   We send multiple chunks at once to the API (batching) for speed.
-
-## 4.2 Database: Supabase
-
-We use **Supabase** as our backend. It's a platform that provides a hosted PostgreSQL database.
-
-*   **Why Supabase?** It offers a powerful PostgreSQL database with the `pgvector` extension for vector search, plus built-in features like User Authentication and File Storage, simplifying development. It scales well and is easy to use.
-*   **`pgvector`:** This extension lets us store vector embeddings directly in our PostgreSQL database and run very fast "find similar vector" searches.
-
-## 4.3 Data Structure
-
-Our database (Supabase Postgres) has tables to hold everything:
-
-*   `documents`: Info about the original PDF file, including its **user/organization ID**.
-*   `sections`: The larger logical sections (from headings), their text, metadata, and **user/organization ID**.
-*   `embeddings`: The smaller text chunks, their vector embeddings, a link back to their `section_id`, and the **user/organization ID**.
-*   `query_logs`: Records of user queries, retrieval steps, and AI responses, linked to the **user ID**.
-
-**Key for Multi-tenancy:** Every table storing user-specific data *must* include a `user_id` or `organization_id` column. Database policies (Row-Level Security in Postgres) can then enforce that users only see and query their own data.
-
-*(See Appendix B for SQL table details)*
-
-## 4.4 Efficient Search
-
-To make retrieval fast, we use database indexes:
-
-*   **Vector Index:** An index (`hnsw` type) on the embedding vectors allows quick similarity searches (`pgvector`).
-*   **Metadata Index:** An index on the metadata (JSONB) allows fast filtering by report type, date, or **user/organization ID**.
-*   **Standard Indexes:** Indexes on IDs and foreign keys speed up linking data between tables.
-
-## 4.5 Adding Data
-
-A process manages saving data to the database after parsing, chunking, and embedding. This ensures that all pieces of a document's data are saved correctly and linked to the correct **user/organization ID**. Transactions are used to ensure everything for one document saves or fails together.
+1.  **Input:** API receives PDF buffer, `user_id`, filename, `doc_type`.
+2.  **`IngestionPipeline.run` initiated.**
+3.  **Parse (`FinancialDocParser`):** Produces `combined_markdown` string.
+4.  **Extract Metadata (`MetadataExtractor`):** Produces `FinancialDocumentMetadata` object.
+5.  **Upload (`SupabaseService`):** PDF buffer uploaded to Storage path (`{user_id}/{temp_doc_id}/{filename}`). Returns `storage_path`.
+6.  **Save Document (`SupabaseService`):** Metadata, IDs, paths, `combined_markdown` -> Insert into `documents`. Returns final `document_id`.
+7.  **Section (`Sectioner`):** `combined_markdown`, `document_id`, `user_id` -> `List[SectionData]`.
+8.  **Save Sections (`SupabaseService`):** `List[SectionData]` -> Bulk insert into `sections`. Returns `List[section_id]`.
+9.  **Add Section IDs:** Pipeline adds generated `section_id`s to `sections_data`.
+10. **Chunk (`ChunkingService`):** `List[SectionData]` (with IDs), `document_metadata`, IDs -> `List[ChunkData]`.
+11. **Embed (`EmbeddingService`):** `List[ChunkData]` -> Adds `embedding` vector to `List[ChunkData]`.
+12. **Save Chunks (`SupabaseService`):** `List[ChunkData]` (with embeddings) -> Bulk insert into `chunks`.
+13. **Update Status (`SupabaseService`):** `document_id`, 'completed' -> Update `documents`.
+14. **Output:** `PipelineResult` dictionary returned.
 
 ---
 
-# Chapter 5: Retrieval Process
+## Chapter 3: Data Ingestion Pipeline
 
-The goal of retrieval is to find the best document sections needed to answer the user's question, making sure to only look at the data that belongs to the current **user/organization**.
+*(This chapter details the first few stages covered by the implemented services)*
 
-## 5.1 How Retrieval Works
+### 3.1 Input: Financial PDFs & User Context
 
-It's a multi-step process:
+The pipeline starts when an authenticated user uploads a financial document (PDF). The system receives the file content as an in-memory buffer, the original filename, the file type (`doc_type`), and crucially, the unique identifier (`user_id`) of the authenticated user from Supabase Auth.
 
-1.  Understand the query (possibly break it down).
-2.  Identify filters (especially the **user/organization ID**).
-3.  Filter the database using metadata.
-4.  Search for similar text vectors within the filtered data.
-5.  Refine the list of results.
+### 3.2 Parsing with Multimodal AI (`FinancialDocParser`)
 
-## 5.2 Handling Complex Queries
+*   **Purpose:** Accurately convert the visual PDF content into structured Markdown.
+*   **Implementation:** The `FinancialDocParser` service uses `pymupdf` to render each page as a PNG image. These images are processed concurrently by sending them to a multimodal AI model (Gemini via `GeminiClient.generate_content`) with a specific prompt (`PDF_ANNOTATION_PROMPT`) requesting accurate Markdown conversion, including tables and formatting. Basic retry logic for API errors is included.
+*   **Output:** A single `combined_markdown` string containing all page content, interleaved with custom page separators (`--- Page X Start ---`, `--- Page X End ---`). This full string is stored in the `documents.full_markdown_content` column.
 
-Some questions ("Compare revenue Q1 vs Q2") need multiple data points. A small AI model can break these down into simpler lookup steps ("Find revenue Q1", "Find revenue Q2"). The system then processes each simple step.
+### 3.3 Metadata Extraction (`MetadataExtractor`)
 
-## 5.3 Identifying Key Details
+*   **Purpose:** Extract key document-level details required for filtering and context.
+*   **Implementation:** The `MetadataExtractor` service takes the initial portion (e.g., first 16k characters) of the `combined_markdown`. It sends this snippet to a text-based LLM (Gemini via `GeminiClient.generate_content`) using a prompt (`METADATA_EXTRACTION_PROMPT`) designed for structured extraction. Crucially, it leverages Gemini's capability to return JSON conforming to a predefined Pydantic schema (`FinancialDocumentMetadata`), ensuring type safety and handling of missing values with placeholders (`-1`, `""`, `"1900-01-01"`).
+*   **Output:** A `FinancialDocumentMetadata` object.
 
-Before searching the database, we analyze the query (and use the authenticated user's ID) to pull out important details like specific dates, report types, and keywords.
+### 3.4 Sectioning (`Sectioner`)
 
-## 5.4 Filtering by Details
+*   **Purpose:** Segment the full `combined_markdown` into logical sections based on document structure.
+*   **Implementation:** The `Sectioner` service uses custom Python logic with regular expressions to identify Markdown headings (`#`, `##`, etc.) as section boundaries. It collects the text content between headings and uses the page separators (`--- Page X Start ---`) to determine the `page_numbers` array associated with each section. It also assigns a sequential `section_index`.
+*   **Output:** A list of `SectionData` dictionaries, ready to be saved to the `sections` table. Each dictionary contains `document_id`, `user_id`, `section_heading`, `page_numbers`, `content_markdown` (for that specific section), and `section_index`.
 
-We use the extracted details, **especially the user/organization ID**, to build a database query. This ensures we only search within the correct user's data from the right documents or time periods. This filtering happens *before* the more complex vector search.
+---
 
-## 5.5 Finding Similar Text
+## Chapter 4: Embedding & Storage (Supabase)
 
-We turn the user's query into a vector embedding. Then, we search the database (using `pgvector`) *within the results of the metadata filter* to find the text chunks whose embeddings are most similar to the query's embedding. We get a list of the top matching chunks.
+*(This chapter details the latter stages of ingestion covered by the implemented services)*
 
-## 5.6 Refining Results
+### 4.1 Chunking (`ChunkingService`)
 
-Vector search is good, but a separate model (a cross-encoder) can do a more detailed comparison of the query against the full text of the candidate sections found. This re-ranks the results to put the most relevant sections at the very top.
+*   **Purpose:** Further divide section content into smaller, fixed-size chunks suitable for embedding, while retaining context.
+*   **Implementation:** The `ChunkingService` iterates through the `SectionData` list. For each section's `content_markdown`, it uses `chonkie.RecursiveChunker` configured with the "markdown" recipe and a specific `chunk_size` (e.g., 512 tokens). For every chunk generated by `chonkie`, it creates a `ChunkData` dictionary, copying key metadata (like `doc_specific_type`, `doc_year`, `company_name`, `section_heading`) from the document/section level into dedicated fields within the chunk data structure. Positional information (`chunk_index`, `start/end_char_index`) is also included.
+*   **Output:** A flat list (`List[ChunkData]`) of all chunks from all sections.
 
-## 5.7 Final Selection
+### 4.2 Embedding Strategy (`EmbeddingService`)
 
-From the re-ranked list, we pick the top few sections to send to the Answer AI. The number depends on how much text the AI model can handle at once.
+*   **Purpose:** Generate meaningful vector representations (embeddings) for each chunk.
+*   **Implementation:** The `EmbeddingService` takes the `List[ChunkData]`. For each chunk, it constructs an "augmented text" string by prepending key copied metadata (e.g., "Document Type: Invoice. Year: 2024...") to the `chunk_text`. This list of augmented strings is sent to the embedding model API (OpenAI `text-embedding-3-small` via `OpenAIClient`). The resulting embedding vectors are added back to the corresponding `ChunkData` dictionaries under the `embedding` key, along with the `embedding_model` name.
+*   **Output:** The `List[ChunkData]`, now enriched with embedding vectors.
+
+### 4.3 Supabase Backend
+
+Supabase provides the integrated backend infrastructure:
+
+*   **Supabase Auth:** Handles user sign-up, login, and provides the unique `user_id` (UUID) necessary for multi-tenancy.
+*   **Supabase Storage:** Stores the original uploaded PDF files privately. Access is controlled via RLS policies based on user ID prefixes in the file path.
+*   **Supabase PostgreSQL:** The core database for storing all structured data.
+    *   **`pgvector` Extension:** Enables efficient storage and similarity searching of vector embeddings.
+
+### 4.4 Database Structure
+
+The PostgreSQL database schema is defined in `scripts/database_setup.sql` (see Appendix B) and includes:
+
+*   **`documents` table:** Stores document metadata, `user_id`, storage path, status, and the `full_markdown_content`. Indexed for filtering. RLS enabled.
+*   **`sections` table:** Stores logical sections, their specific `content_markdown`, page numbers, index, and links (`document_id`, `user_id`). Indexed. RLS enabled.
+*   **`chunks` table:** Stores the final text chunks, their vector `embedding` (`vector(1536)` type), copied metadata for filtering, and links (`section_id`, `document_id`, `user_id`). Indexed, including HNSW index on `embedding`. RLS enabled.
+
+### 4.5 Storage Structure & Security
+
+*   **Bucket:** A private bucket `financial-pdfs` is used.
+*   **Path Structure:** Files are uploaded to `{user_id}/{document_id}/{filename}`.
+*   **RLS Policies:** Defined in `scripts/storage_setup.sql` (see Appendix C), these policies on `storage.objects` ensure users can only `SELECT`, `INSERT`, `UPDATE`, or `DELETE` files where the *first segment* of the path matches their own `auth.uid()`.
+
+### 4.6 Persistence (`SupabaseService`)
+
+*   **Purpose:** Abstract all direct interactions with Supabase Storage and Database.
+*   **Implementation:** The `SupabaseService` class uses the `supabase-py` client library. It assumes an authenticated client context is available.
+    *   `upload_pdf_to_storage`: Uploads PDF bytes to the correct user-specific path.
+    *   `save_document_record`: Inserts data into the `documents` table.
+    *   `save_sections_batch`: Bulk inserts into the `sections` table.
+    *   `save_chunks_batch`: Bulk inserts into the `chunks` table (including vectors).
+    *   `update_document_status`: Updates the `documents.status` field.
+*   **RLS Compliance:** Correctly includes the `user_id` in database operations, relying on the authenticated client session for Supabase to enforce RLS policies.
+
+---
+
+## Chapter 5: Retrieval Process (Future Work)
+
+*(This chapter outlines the planned functionality for querying the ingested data)*
+
+### 5.1 How Retrieval Works
+
+Finding the right information involves understanding the query, filtering data (critically by user), searching for semantic similarity, and refining the results.
+
+### 5.2 Handling Complex Queries
+
+A planned step involves using an LLM to decompose complex questions into simpler sub-queries for sequential processing.
+
+### 5.3 Identifying Key Details & Filters
+
+The system will parse the user query to extract explicit filters like dates, company names, or report types.
+
+### 5.4 Filtering by Details (Inc. User ID)
+
+The **first and most critical filter** applied to any database query (sections or chunks) will be `WHERE user_id = [authenticated_user_id]`. Additional metadata filters (year, type, company) identified from the query will further narrow the search space within the user's data.
+
+### 5.5 Finding Similar Text (Vector Search)
+
+The user query will be embedded. A `pgvector` similarity search (`<->` operator) will be performed on the `chunks.embedding` column *within the filtered set of chunks* to find the chunks whose meaning is closest to the query.
+
+### 5.6 Refining Results (Re-ranking)
+
+The initial chunks/sections retrieved via vector search will likely be re-ranked using a more computationally intensive cross-encoder model to improve the relevance ordering before passing to the answer generation stage.
+
+### 5.7 Final Selection
+
+A predefined number of top-ranked, relevant sections will be selected to form the context for the Answer Generation LLM.
 
 ---
 
@@ -459,284 +485,132 @@ Testing isn't just the end; it's part of development. We:
 
 ---
 
-# Chapter 9: Building the System
+## Chapter 9: Building the System (Current State)
 
-## 9.1 Technology Summary
+### 9.1 Technology Summary
 
-*   **Code:** Python.
-*   **AI APIs:** For parsing, embedding, asking questions, and using tools (e.g., Google Gemini, Fireworks AI).
-*   **Database & Backend:** **Supabase** (Postgres with `pgvector`, Auth, Storage).
-*   **Refining Search:** A Python library (like `sentence-transformers`).
-*   **Settings:** YAML files.
-*   **Secrets:** Environment variables (`.env`).
+*   **Code:** Python 3.x
+*   **AI APIs:** Google Gemini (`google-genai`), OpenAI (`openai`)
+*   **Backend:** Supabase (PostgreSQL + `pgvector`, Auth, Storage)
+*   **PDF Parsing:** `pymupdf`
+*   **Chunking:** `chonkie`
+*   **Data Models:** `pydantic`
+*   **Environment:** `.env` files (`python-dotenv`)
 
-## 9.2 Key Libraries
+### 9.2 Key Libraries Used
 
-We use Python libraries for:
+*   `supabase-py`: Supabase client.
+*   `google-genai`: Gemini API interaction.
+*   `openai`: OpenAI API interaction (embeddings).
+*   `pymupdf`: PDF rendering.
+*   `chonkie`: Recursive Markdown chunking.
+*   `pydantic`: Metadata schema definition and validation.
+*   `python-dotenv`: Loading environment variables.
 
-*   Talking to Supabase (`supabase-py`).
-*   Interacting with AI APIs.
-*   Handling text and embeddings (`sentence-transformers`).
-*   Loading settings (`PyYAML`, `python-dotenv`).
-*   Basic file handling.
-*   Logging.
-*   Building simple interfaces (like Streamlit).
+### 9.3 Setup
 
-## 9.3 Setup
+*   Python virtual environment (`.venv`).
+*   `requirements.txt` for dependencies.
+*   `.env` file for storing API keys and Supabase credentials (excluded from Git).
 
-*   Use a virtual environment for Python libraries.
-*   Keep sensitive details (API keys, database passwords) in a `.env` file that is *not* saved in code version control.
-*   Load `.env` variables when the system starts.
+### 9.4 Configuration
 
-## 9.4 Configuration
+*   API Keys and Supabase URL/Key stored in `.env`.
+*   AI model names are hardcoded in client/service classes (could be moved to config).
+*   Chunking parameters (`chunk_size`, `min_characters_per_chunk`) are configurable in `ChunkingService.__init__`.
 
-We use configuration files (like `config.yaml`) to easily change settings without changing code. This includes:
+### 9.5 Code Structure
 
-*   Which AI models to use.
-*   Search settings (how many results to get).
-*   File paths.
-*   Prompts (or paths to prompt files).
-*   **New:** Supabase connection details (from `.env`).
+The implementation follows the structure outlined in Chapter 2.3, using `src/llm/` for AI clients and `src/services/` for processing logic, orchestrated by `src/pipeline.py`.
 
-## 9.5 Code Structure
+### 9.6 Version Control
 
-We organize the code into logical parts (modules) in a `src` folder:
-
-*   `src/parsing.py`: Handles reading PDFs and formatting.
-*   `src/chunking.py`: Breaks text into sections.
-*   `src/embedding.py`: Creates vectors.
-*   `src/storage.py`: Interacts with the database (Supabase).
-*   `src/retrieval.py`: Manages finding relevant sections.
-*   `src/generation.py`: Handles asking the AI and using tools.
-*   `src/tools.py`: The calculation functions.
-*   `src/evaluation.py`: Runs tests.
-*   `src/postprocessing.py`: Cleans answers and adds sources.
-*   **New:** Add components for handling user authentication and passing the user context through the pipeline.
-
-This structure makes the code easier to understand, test, and maintain.
-
-## 9.6 Version Control
-
-We use Git (and GitHub) to track changes, work on features safely, and keep a history of the code. We make sure secrets are ignored.
+Git and GitHub are used for version control. The `.gitignore` file prevents secrets (`.env`) and generated files (`__pycache__`, `.venv`) from being committed.
 
 ---
 
-# Chapter 10: Monitoring & Logs
+*(Chapters 10 describes future logging; Chapter 11 discusses deployment)*
 
-## 10.1 Why Log?
+## Chapter 10: Monitoring & Logs (Future Work)
+## Chapter 11: Running the System
 
-Logs are records of what the system did. They are essential for:
+### 11.1 Testing Setup (Notebooks)
 
-*   Finding out why something went wrong (debugging).
-*   Seeing which parts are slow (performance).
-*   Getting data for evaluation.
-*   Understanding how users are using the system.
-*   Tracking costs (API usage).
+The ingestion pipeline components and the end-to-end flow were developed and tested using Jupyter notebooks located in the `notebooks/` directory. These notebooks demonstrate individual service functionality and the final integrated pipeline execution against a configured Supabase project.
 
-## 10.2 Log Details
+### 11.2 Production Ideas
 
-We save detailed information about each user question (query) processed. This includes:
+A production deployment would involve wrapping the `IngestionPipeline` within a web framework like FastAPI, deploying it as a scalable service (e.g., using Docker containers on a cloud platform), and likely implementing background task queues for handling the potentially long-running ingestion process triggered by API uploads.
 
-*   The original question.
-*   **New:** The **User ID**.
-*   Which filters were used.
-*   Which sections were found, re-ranked, and actually used by the AI.
-*   The exact prompt sent to the Answer AI.
-*   The raw response from the AI.
-*   Details about any tool calls (what the AI asked for, what the tool returned).
-*   The final answer and sources shown to the user.
-*   Success or failure status and any error messages.
-*   How long each step took.
-*   Estimated cost (based on AI tokens used).
+### 11.3 Handling More Users
 
-This information is stored in a dedicated table in Supabase (like `query_logs`).
+The current design supports multi-tenancy via `user_id` and RLS. Scaling requires attention to database indexing (already implemented), potential database connection pooling, API rate limits for AI services, and potentially scaling the application instances running the pipeline.
 
-## 10.3 How Logging Works
+### 11.4 Managing Costs
 
-We use Python's built-in logging system, configured to save these detailed records to the Supabase database table.
-
-## 10.4 Using Logs
-
-We can look at the logs to:
-
-*   Trace exactly what happened for a specific user's question.
-*   Analyze performance trends over time.
-*   Figure out API costs.
-*   Provide data for automated evaluation scripts.
+Costs primarily involve AI API usage (Gemini, OpenAI) and Supabase resource consumption. Tracking token counts (possible via API responses or estimations) and Supabase usage metrics is important. Model selection and efficient prompting/processing (like using snippets for metadata) help manage costs.
 
 ---
 
-# Chapter 11: Running the System
+## Chapter 12: Next Steps
 
-## 11.1 Demo Setup
+### 12.1 Immediate Next Steps
 
-For the project demonstration, we can run the system locally or on a simple cloud setup.
+The immediate next steps involve building the "query" side of the RAG application:
 
-*   **CLI:** Run scripts from the command line (good for testing).
-*   **Streamlit:** A simple web page interface (good for showing how it works).
-*   **Docker:** Packaging the app in a container ensures it runs the same everywhere and makes deployment easier.
+1.  **Implement Retrieval Logic:** Create services and database queries (`SupabaseService` read methods) to perform filtering (by `user_id` and metadata) and vector search. Implement re-ranking if desired.
+2.  **Implement Calculation Tools:** Create the Python functions for required financial calculations.
+3.  **Implement Answer Generation:** Create the service to interact with the answer LLM, manage context, handle tool calls, and generate the final answer and sources.
+4.  **Develop API Layer (FastAPI):** Build endpoints for `/upload-document` (triggering `IngestionPipeline`) and `/ask-question` (triggering Retrieval and Generation). Implement authentication middleware.
+5.  **Develop Frontend:** Create a user interface for login, upload, and querying.
 
-Supabase provides managed services for the database, auth, and storage, which simplifies things greatly compared to managing them yourself.
+### 12.2 Future Enhancements
 
-## 11.2 Production Ideas
-
-For a real-world version:
-
-*   Use a more robust web framework (like FastAPI) to build an API backend.
-*   Deploy to a cloud platform (AWS, GCP, Azure) using managed services or containers for scalability.
-*   Use Supabase's managed services for the database, auth, and storage.
-
-## 11.3 Handling More Users
-
-*   **Database:** Supabase handles database scaling, but indexing (especially with the **user/organization ID**) is crucial for performance as data grows.
-*   **APIs:** AI API rate limits can be a bottleneck. We need retry logic and maybe queues.
-*   **Application Code:** The part of the system that runs the RAG pipeline needs to be able to handle many requests at once (concurrency), possibly by running multiple copies (scaling instances) if using a framework like FastAPI.
-
-## 11.4 Managing Costs
-
-AI API costs can be high. We track token usage via logs. We can optimize by:
-
-*   Choosing cost-effective AI models where possible.
-*   Making prompts concise.
-*   Batching API calls.
-*   Monitoring Supabase usage.
+*   Support for other file types (DOCX, XLSX).
+*   OCR for scanned PDFs.
+*   More sophisticated table extraction.
+*   Advanced RAG techniques (HyDE, query transformation, etc.).
+*   Fine-tuning embedding or re-ranking models.
+*   More robust error handling and logging.
+*   User feedback mechanisms.
 
 ---
 
-# Chapter 12: Next Steps
+## Appendix
 
-The project provides a solid base. Here are ideas for making it better:
+### A. Example AI Prompts
 
-## 12.1 Based on Testing
+*(Referenced prompts from `FinancialDocParser` and `MetadataExtractor` are included in their respective code files)*
 
-The evaluation results tell us where to focus:
+### B. Database Setup SQL (`database_setup.sql`)
 
-*   If finding the right info is hard, we could fine-tune the Embedding or Re-ranker models on financial data.
-*    If the AI isn't following instructions or refuses wrongly, we could fine-tune a smaller Answer AI model specifically for our task and maybe run it on a fast platform like Groq.
+*(Contents of `scripts/database_setup.sql` as provided previously)*
 
-## 12.2 Adding Features
+### C. Storage Setup SQL (`storage_setup.sql`)
 
-*   Handle scanned PDFs using OCR (converting images of text to text).
-*   Improve table extraction for even more complex tables.
-*   Allow asking questions that compare data across many different documents or years.
-*   Connect to live accounting software APIs (like QuickBooks).
-*   Add more specific calculation tools.
-*   Handle other types of business documents (contracts, etc.).
+*(Contents of `scripts/storage_setup.sql` as provided previously)*
 
-## 12.3 User Experience
+### D. Key Terms
 
-*   Build a nicer, professional web interface.
-*   Add ways for users to give feedback on answers.
-*   Add charts and graphs to visualize financial data.
-
----
-
-# Appendix
-
-## A. Example Instructions for AI Models
-
-These are simplified examples of the text we send to the AI models to guide their behavior.
-
-**A.1 AI Parser Instructions (for Gemini Vision):**
-
-```text
-SYSTEM: You are a tool to extract structured text from financial PDF reports.
-Read the PDF page by page.
-Output the content as Markdown.
-Use headings (#, ##) for sections.
-Use Markdown format for tables.
-Extract these details and put them at the very top in YAML:
-report_type (Income Statement, Balance Sheet, Cash Flow)
-company_name
-period_end_date (YYYY-MM-DD)
-fiscal_year
-currency
----
-[PDF Content is provided here]
-```
-
-**A.2 Query Breakdown Instructions (for a small AI):**
-
-```text
-SYSTEM: Analyze this financial question.
-If it needs multiple steps or data points to answer, list the simple lookup steps needed.
-If it's simple, just give the original question back.
-Respond ONLY in JSON: {"needs_decomposition": true/false, "sub_queries": [...] or "original_query": "..."}
----
-User Query: [User's question]
-```
-
-**A.3 Answer AI Instructions (for Gemini 1.5 Pro):**
-
-```text
-SYSTEM: You are a reliable AI Financial Assistant.
-ONLY use the text in the [CONTEXT SECTIONS].
-DO NOT use outside knowledge.
-If the answer is NOT in [CONTEXT SECTIONS], say "The provided documents do not contain sufficient information to answer this question." EXACTLY.
-Use the [AVAILABLE TOOLS] for calculations.
-Cite your sources: add "[{Source Filename}, Section: '{Section Heading}']" after each fact/number from the context.
----
-AVAILABLE TOOLS:
-[Tool schemas - like Appendix C JSON]
----
-[CONTEXT SECTIONS]:
-### SECTION 1 ###
-Metadata: {source_filename: ..., section_heading: ...}
-Text: [Full text of retrieved section 1]
-### SECTION 2 ###
-...
----
-USER QUERY: [User's question]
----
-Your Answer:
-```
-
-**A.4 Evaluation AI Instructions (for a judge AI):**
-
-```text
-SYSTEM: Evaluate if an AI's answer is based ONLY on provided text.
----
-PROVIDED TEXT:
-[Full text of all sections given to the Answer AI]
----
-AI ANSWER:
-[The final answer the system produced]
----
-QUESTION: Is *every* fact/number in the AI ANSWER directly supported by the PROVIDED TEXT? Answer ONLY 'Yes' or 'No'.
-```
-
-## E. Key Terms
-
-*   **AI CFO Assistant:** The system that answers financial questions from documents.
-*   **AI Model (LLM):** Large language model like Gemini, used for understanding text, generating answers, and using tools.
-*   **API:** Way software talks to other software (like our code talking to AI models or Supabase).
-*   **Attribution:** Showing the original document sections used for an answer.
-*   **Chunking:** Breaking documents into smaller text pieces.
-*   **Context Window:** How much text an AI model can read at once.
-*   **Cross-Encoder:** A model that re-ranks search results for better accuracy.
-*   **Embedding:** A number list (vector) that represents text meaning.
-*   **Faithfulness:** An answer only using the provided documents, not guessing.
-*   **Function Calling (Tool Use):** When an AI asks to run external code (our tools) for tasks like calculations.
-*   **Golden Dataset:** Test questions with known correct answers and sources.
-*   **Graceful Refusal:** The system saying it cannot answer because the info isn't in the documents.
-*   **Ingestion:** The process of reading, processing, and saving a document.
-*   **Logging:** Recording system activity for debugging and analysis.
-*   **Markdown:** Simple text formatting.
-*   **Metadata:** Details about documents or sections (like date, type, heading).
-*   **Multi-tenancy:** Designing the system so data for different users/organizations is kept separate and secure.
-*   **`pgvector`:** A feature for PostgreSQL databases to store and search vector embeddings.
-*   **Prompt Engineering:** Writing clear instructions for the AI.
-*   **RAG (Retrieval-Augmented Generation):** Finding relevant info (Retrieval) before asking the AI to generate an answer (Generation) using that info.
-*   **Re-ranking:** Sorting search results to put the most relevant first.
-*   **Retrieval:** The process of finding relevant document sections.
-*   **Row-Level Security (RLS):** A database feature (in Postgres/Supabase) to control which rows users can access based on their identity, crucial for multi-tenancy.
-*   **Semantic Search:** Searching based on meaning, not just keywords (using embeddings).
-*   **SME:** Small or Medium Enterprise.
-*   **Supabase:** Our chosen backend platform providing managed Postgres (`pgvector`), User Authentication, and File Storage.
-*   **Synthetic Data:** Test data we create ourselves.
-*   **Tool:** A specific function (like a calculation) that the AI can ask the system to perform.
-*   **User Authentication (Auth):** Verifying who the user is.
-*   **Vector Database:** A database good at storing and searching vector embeddings.
-*   **YAML:** A format for structured data used in document metadata.
+*   **AI Model (LLM):** Large language model (e.g., Gemini).
+*   **API:** Application Programming Interface.
+*   **Chunking:** Splitting text into smaller pieces (`chonkie`).
+*   **Embedding:** Numerical vector representation of text meaning (via OpenAI).
+*   **Function Calling / Tool Use:** LLM requesting execution of external code.
+*   **Ingestion:** Processing and storing documents.
+*   **Markdown:** Text formatting language.
+*   **Metadata:** Data *about* the document (type, date, company, summary).
+*   **Multi-tenancy:** Supporting multiple users with isolated data.
+*   **`pgvector`:** PostgreSQL extension for vector storage and search.
+*   **Pipeline:** The sequence of steps in a process (`IngestionPipeline`).
+*   **Pydantic:** Python library for data validation and schema definition.
+*   **RAG:** Retrieval-Augmented Generation.
+*   **Retrieval:** Finding relevant information.
+*   **RLS (Row-Level Security):** Database feature enforcing data access rules per user.
+*   **Sectioning:** Dividing a document into logical parts based on headings.
+*   **Semantic Search:** Searching based on meaning using embeddings.
+*   **Service:** A modular code component with a specific responsibility.
+*   **Supabase:** Backend-as-a-Service platform used for DB, Auth, Storage.
+*   **Vector:** A list of numbers representing data (like text embeddings).
 
 ---
