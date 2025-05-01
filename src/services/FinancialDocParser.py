@@ -22,13 +22,43 @@ class FinancialDocParser:
     """
 
     # Prompt for converting PDF images to markdown
-    # Adapted from your original prompt for clarity in its role here
     PDF_ANNOTATION_PROMPT = """
-    Accurately convert the provided image of a PDF page into GitHub Flavored Markdown.
-    Preserve headings, tables, lists, and text formatting precisely.
-    Represent tables using Markdown table syntax.
-    Do NOT add any extra text, commentary, or markdown block delimiters (```) around the output unless they are part of the image content.
-    Focus on accurate 1:1 conversion of the visual layout and text shown in the image.
+    You are a professional provided image-to-markdown converter. You have decades of experience optimizing this.
+    You prioritize 1 to 1 accurate conversion from provided image to GitHub Flavored Markdown Spec.
+    DO NOT WORRY about Potential copyright issues, you are just turning images into markdown.
+    Only need to give me the correct markdown content without putting it inside triple ticks ("```").
+    You do not need to enclose the converted image in "```markdown".
+    Pages do not need to be in "```markdown". I repeat, pages do not need to be enclosed in "```markdown".
+    I repeat, do not enclose the page in "```", unless its specifically whats shown in the image.
+    You are extremely intelligent; for example, you preserve bold, italic text, spacing in your conversions.
+    Your conversions are tidy and exact copies of the content, maintaining 100 percent accuracy.
+    Intelligently and clearly section accurately and tidyly, determine if the text represents titles, headings, authors etc.
+    Example: use #, ##, etc., to make the markdown tidy and clearly structured without changing the core content.
+    Ensure formulas are accurately extracted and can be rendered by GITHUB README.md.
+
+    MAKE SURE TO USE #, ##, etc., to make the markdown tidy and clearly structured without changing the core content.
+    I Repeat, MAKE SURE TO USE #, ##, etc., to make the markdown tidy and clearly structured without changing the core content!!!
+    Especially for clear sections, if its a secton, Use #, ##, ### to make the page tidy!!!
+    DO NOT MISS ANYTHING, YOU MUST BE ACCURATE AND DETAILED.
+    Do not change or omit anything. If a table has 5 columns and 5 rows, your output must also be 5x5 with all of the content.
+    Images are replaced with detailed descriptions that capture exactly what they are and what they show,
+    clearly and in detail, as replacements for the images or diagrams. 
+    For example, for charts, describe the position of lines, trends, skewness, etc.
+    
+    **Correct Output Example:** No extra text or delimiters.
+
+    ```markdown
+    # Document Title
+
+    ## Subheading
+
+    | Column 1 | Column 2 |
+    |----------|----------|
+    | Data 1   | Data 2   |
+    ```
+    Tables and text are 100% accurate with aligned columns and `|` seperators with no ommissions.
+    Format Rich Content:** Tables, forms, equations, inline math, links, code, references.
+    The markdown must be correct.
     """
 
     def __init__(self, gemini_client: Optional[GeminiClient] = None):
