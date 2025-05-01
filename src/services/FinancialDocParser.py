@@ -39,7 +39,8 @@ class FinancialDocParser:
     MAKE SURE TO USE #, ##, etc., to make the markdown tidy and clearly structured without changing the core content.
     I Repeat, MAKE SURE TO USE #, ##, etc., to make the markdown tidy and clearly structured without changing the core content!!!
     Especially for clear sections, if its a secton, Use #, ##, ### to make the page tidy!!!
-    DO NOT MISS ANYTHING, YOU MUST BE ACCURATE AND DETAILED.
+    DO NOT MISS ANYTHING, YOU MUST BE ACCURATE AND DETAILED, TABLES KEPT AS IS.
+
     Do not change or omit anything. If a table has 5 columns and 5 rows, your output must also be 5x5 with all of the content.
     Images are replaced with detailed descriptions that capture exactly what they are and what they show,
     clearly and in detail, as replacements for the images or diagrams. 
