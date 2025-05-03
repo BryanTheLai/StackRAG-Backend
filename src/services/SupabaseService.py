@@ -184,16 +184,14 @@ class SupabaseService:
 
         print(f"Saving batch of {len(sections)} section records...")
         try:
-            # Prepare the list of dictionaries for bulk insert
-            # Ensure required fields are present and types match DB (convert UUIDs to str)
             section_payload = [
                 {
                     "document_id": str(s['document_id']),
                     "user_id": str(s['user_id']),
                     "section_heading": s.get('section_heading'),
-                    "page_numbers": s.get('page_numbers', []), # Ensure it's a list
+                    "page_numbers": s.get('page_numbers', []),
                     "content_markdown": s.get('content_markdown', ''),
-                    "section_index": s.get('section_index', 0) # Ensure it has a value
+                    "section_index": s.get('section_index', 0)
                 } for s in sections
             ]
 

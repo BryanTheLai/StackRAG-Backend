@@ -1,14 +1,11 @@
 # src/services/ChunkingService.py
 
 from typing import List, Dict, Any, Optional
-import uuid # For UUID type hinting
-from chonkie import RecursiveChunker # Import the RecursiveChunker
-# Assuming SectionData format from Sectioner.py
+import uuid
+from chonkie import RecursiveChunker
 from src.services.Sectioner import SectionData
-# Assuming FinancialDocumentMetadata model from MetadataExtractor.py
 from src.services.MetadataExtractor import FinancialDocumentMetadata
 
-# Define a structure for the output chunk data before embedding
 ChunkData = Dict[str, Any]
 
 class ChunkingService:
@@ -19,7 +16,7 @@ class ChunkingService:
 
     def __init__(
         self,
-        chunk_size: int = 512,
+        chunk_size: int = 2048,
         min_characters_per_chunk: int = 24,
         # Add other chonkie settings here if needed
     ):
@@ -74,7 +71,7 @@ class ChunkingService:
 
 
         for section in sections:
-            section_id = section.get("id", uuid.uuid4()) # Get section ID or generate if not already present (should be present after saving sections)
+            section_id = section.get("id", uuid.uuid4())
             section_heading = section.get("section_heading", "Unknown Section")
             section_markdown = section.get("content_markdown", "")
 

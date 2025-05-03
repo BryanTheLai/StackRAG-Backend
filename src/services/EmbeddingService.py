@@ -1,12 +1,8 @@
 # src/services/EmbeddingService.py
 
 from typing import List, Dict, Any, Optional
-# Assuming ChunkData format from ChunkingService.py
 from src.services.ChunkingService import ChunkData
-# Assuming OpenAIClient is in src/llm
 from src.llm.OpenAIClient import OpenAIClient
-# Need uuid to check type if needed, though not directly used in generation
-import uuid
 
 class EmbeddingService:
     """
@@ -87,10 +83,8 @@ class EmbeddingService:
                 chunks_data[original_chunk_index]['embedding_model'] = self.openai_client.embedding_model
 
             print(f"Successfully added embeddings to {valid_embeddings_count} chunks.")
-            return chunks_data # Return the modified list
-
+            return chunks_data
         except Exception as e:
-             # Bare bones: print error and return the chunks without embeddings
              print(f"Error generating embeddings: {e}")
              # In a real system, you would handle this more robustly (e.g., retry, log, return specific error)
              return chunks_data # Return the original list, potentially without new 'embedding' keys

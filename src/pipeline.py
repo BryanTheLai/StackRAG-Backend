@@ -58,7 +58,7 @@ class IngestionPipeline:
         print("IngestionPipeline initialized with all services.")
 
 
-    def run(
+    async def run(
         self,
         pdf_file_buffer: IO[bytes],
         user_id: uuid.UUID,

@@ -1,12 +1,10 @@
 # src/services/FinancialDocParser.py
 
-import os
 import time
-import pymupdf as fitz # Use the official name for PyMuPDF
+import pymupdf as fitz
 import concurrent.futures
 from typing import Optional, Dict, Any, Tuple, IO
 from google.genai import types
-# Assuming GeminiClient is in src/llm
 from src.llm.GeminiClient import GeminiClient
 
 # Define a simple structure to hold the parsing result
@@ -68,8 +66,7 @@ class FinancialDocParser:
         Uses default GeminiClient if none provided.
         """
         self.gemini_client = gemini_client or GeminiClient()
-        # Multimodal models are typically needed for image input
-        self.multimodal_model = "gemini-2.0-flash-lite" # Ensure this model supports image input
+        self.multimodal_model = "gemini-2.0-flash-lite"
 
 
     def parse_pdf_to_markdown(self, pdf_file: IO[bytes]) -> ParsingResult:
