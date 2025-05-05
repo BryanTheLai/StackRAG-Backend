@@ -1,15 +1,13 @@
-# src/llm/OpenAIClient.py
-
 import os
 from typing import List
 from dotenv import load_dotenv
-from openai import OpenAI # Assuming you have openai library installed
+from openai import OpenAI
 
 class OpenAIClient:
-    """Client for interacting with OpenAI's API, primarily for embeddings."""
+    """Handles interactions with OpenAI API, primarily for embeddings."""
 
     def __init__(self):
-        """Initialize client with API key from environment."""
+        """Initializes client with API key from environment."""
         load_dotenv()
 
         self.api_key = os.environ.get("OPENAI_API_KEY")
@@ -31,13 +29,13 @@ class OpenAIClient:
 
     def get_embeddings(self, texts: List[str]) -> List[List[float]]:
         """
-        Gets embeddings for a list of texts using the configured model.
+        Gets embeddings for a list of texts.
 
         Args:
-            texts: A list of strings to embed.
+            texts: List of strings to embed.
 
         Returns:
-            A list of embedding vectors (list of floats).
+            List of embedding vectors.
         """
         response = self.client.embeddings.create(
             input=texts,
