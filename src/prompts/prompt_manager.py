@@ -7,7 +7,6 @@ class PromptManager:
 
     @classmethod
     def _get_env(cls, templates_dir="templates"):
-        # point at src/prompts/templates
         templates_path = Path(__file__).parent / templates_dir
         if cls._env is None:
             cls._env = Environment(
