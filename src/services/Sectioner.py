@@ -14,7 +14,6 @@ class Sectioner:
     """
 
     # Regex to find Markdown headings (H1 to H6) at the start of a line
-    # We are being simple and only looking for #, ##, ###, ####, etc.
     HEADING_PATTERN = re.compile(r'^#+\s.*')
 
     # Regex to find our custom page start markers
@@ -42,71 +41,69 @@ class Sectioner:
         current_section_heading: str = "Document Start" # Default for content before first heading
         current_page_numbers: set[int] = set()
         section_index_counter: int = 0
-        # Track if we are inside a markdown code block (```) to ignore # inside it
         in_code_block: bool = False
+        # --- MODIFICATION: Track the last encountered page number ---
+        last_page_number_seen: int = 0 # Initialize with 0, page numbers are 1-based
 
         if not markdown_content:
             print("No markdown content provided to section.")
             return []
 
-        # Split the markdown content into lines for iteration
         lines = markdown_content.splitlines()
 
         print(f"Sectioning markdown content ({len(lines)} lines)...")
 
-        for line in lines:
-            line = line.rstrip() # Remove trailing whitespace
+        for line_index, line in enumerate(lines): # Use line_index for debugging if needed
+            line = line.rstrip()
 
-            # Check for markdown code block fences to toggle state
             if line.strip() == "```":
                  in_code_block = not in_code_block
-                 current_section_content.append(line) # Include the fence in content
-                 continue # Move to the next line
+                 current_section_content.append(line)
+                 continue
 
-            # Check for page start markers
             page_match = self.PAGE_START_MARKER_PATTERN.match(line)
             if page_match:
                 try:
                     page_num_str = page_match.group(1)
                     page_num = int(page_num_str)
+                    # --- MODIFICATION: Add page number to *current* section's pages ---
                     current_page_numbers.add(page_num)
+                    # --- MODIFICATION: Update last page seen ---
+                    last_page_number_seen = page_num
                 except (ValueError):
-                    # Handle unexpected marker format - bare bones: just print
                     print(f"Warning: Could not parse page number from marker: {line}")
 
-                # Include the page marker in the current section content (optional, but keeps fidelity)
                 current_section_content.append(line)
-                continue # Move to the next line
+                continue
 
-            # Check for Markdown headings, BUT only if NOT inside a code block
             if not in_code_block and self.HEADING_PATTERN.match(line):
-                # This line is a new section heading.
-                # First, finalize the previous section (if any content has been collected)
+                # Found a heading, finalize the previous section first
                 if current_section_content:
-                    # Create a dictionary for the finished section
                     section_data: SectionData = {
                         "document_id": document_id,
                         "user_id": user_id,
-                        "section_heading": current_section_heading.strip(), # Clean up heading text
-                        "page_numbers": sorted(list(current_page_numbers)), # Convert set to sorted list
-                        "content_markdown": "\n".join(current_section_content).strip(), # Combine lines and strip whitespace
+                        "section_heading": current_section_heading.strip(),
+                        # --- MODIFICATION: Use the pages collected for the *previous* section ---
+                        "page_numbers": sorted(list(current_page_numbers)),
+                        "content_markdown": "\n".join(current_section_content).strip(),
                         "section_index": section_index_counter,
-                        # Add other metadata if needed in the future
                     }
                     sections.append(section_data)
-                    print(f"Finalized section {section_index_counter}: '{current_section_heading.strip()}'")
+                    print(f"Finalized section {section_index_counter}: '{current_section_heading.strip()}' (Pages: {section_data['page_numbers']})") # Added page numbers print
                     section_index_counter += 1
 
                 # Start a new section
-                current_section_heading = line.lstrip('# ').strip() # Get the text after the ###
-                current_section_content = [line] # Start new content list with the heading line itself
-                current_page_numbers = set() # Reset page numbers for the new section
-                # Note: The page marker *immediately following* this heading will be added
-                # to the *next* section's page numbers when encountered in the loop.
+                current_section_heading = line.lstrip('# ').strip()
+                current_section_content = [line] # Start new content list with the heading line
+                # --- MODIFICATION: Initialize new section's pages with the last page seen ---
+                current_page_numbers = set()
+                if last_page_number_seen > 0: # Only add if a page marker was seen at least once
+                    current_page_numbers.add(last_page_number_seen)
+                # --- END MODIFICATION ---
+
 
             else:
-                # This line is regular content or a page end marker (which we don't need to specifically track)
-                # or a code block fence (already handled). Add it to the current section content.
+                # Regular content line
                 current_section_content.append(line)
 
 
@@ -116,12 +113,12 @@ class Sectioner:
                 "document_id": document_id,
                 "user_id": user_id,
                 "section_heading": current_section_heading.strip(),
-                "page_numbers": sorted(list(current_page_numbers)),
+                "page_numbers": sorted(list(current_page_numbers)), # Use the pages collected for the last section
                 "content_markdown": "\n".join(current_section_content).strip(),
                 "section_index": section_index_counter,
              }
              sections.append(section_data)
-             print(f"Finalized last section {section_index_counter}: '{current_section_heading.strip()}'")
+             print(f"Finalized last section {section_index_counter}: '{current_section_heading.strip()}' (Pages: {section_data['page_numbers']})") # Added page numbers print
 
 
         print(f"Sectioning complete. Created {len(sections)} sections.")
