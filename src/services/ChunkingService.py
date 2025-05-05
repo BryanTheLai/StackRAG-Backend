@@ -1,6 +1,4 @@
-# src/services/ChunkingService.py
-
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import uuid
 from chonkie import RecursiveChunker
 from src.services.Sectioner import SectionData
@@ -9,35 +7,17 @@ from src.services.MetadataExtractor import FinancialDocumentMetadata
 ChunkData = Dict[str, Any]
 
 class ChunkingService:
-    """
-    Breaks down the markdown content of document sections into smaller chunks
-    using RecursiveChunker, and associates key metadata with each chunk.
-    """
+    """Split markdown into fixed-size chunks."""
 
-    def __init__(
-        self,
-        chunk_size: int = 2048,
-        min_characters_per_chunk: int = 24,
-        # Add other chonkie settings here if needed
-    ):
-        """
-        Initialize the ChunkingService with RecursiveChunker configuration.
-
-        Args:
-            chunk_size: The maximum token limit for each chunk.
-            min_characters_per_chunk: Minimum character count to form a valid chunk.
-        """
-        print("Initializing ChunkingService with RecursiveChunker...")
-        # Initialize the RecursiveChunker with the markdown recipe
-        # This recipe understands markdown structure for better splits
+    def __init__(self, chunk_size: int = 2048, min_characters_per_chunk: int = 24):
+        print("Initializing ChunkingService...")
         self.chunker = RecursiveChunker.from_recipe(
-            "markdown",
-            lang="en", # Specify language, important for tokenization
+            "markdown", lang="en",
             chunk_size=chunk_size,
             min_characters_per_chunk=min_characters_per_chunk,
-            return_type="chunks" # Ensure we get structured RecursiveChunk objects
+            return_type="chunks"
         )
-        print(f"RecursiveChunker initialized with chunk_size={chunk_size}, min_chars={min_characters_per_chunk}")
+        print(f"chunk_size={chunk_size}, min_chars={min_characters_per_chunk}")
 
     def chunk_sections(
         self,
@@ -46,78 +26,42 @@ class ChunkingService:
         document_id: uuid.UUID,
         user_id: uuid.UUID
     ) -> List[ChunkData]:
-        """
-        Chunks the content of each section and prepares chunk data for storage.
-
-        Args:
-            sections: A list of SectionData dictionaries from the Sectioner.
-            document_metadata: The structured metadata for the document (from MetadataExtractor).
-            document_id: The UUID of the parent document.
-            user_id: The UUID of the user who owns the document.
-
-        Returns:
-            A flat list of ChunkData dictionaries, ready to be embedded and saved.
-        """
-        all_chunks_data: List[ChunkData] = []
+        """Return flat list of chunk dicts."""
         print(f"Chunking {len(sections)} sections...")
+        meta = {
+            "doc_specific_type": getattr(document_metadata.doc_specific_type, "value", None),
+            "doc_year": None if document_metadata.doc_year == -1 else document_metadata.doc_year,
+            "doc_quarter": None if document_metadata.doc_quarter == -1 else document_metadata.doc_quarter,
+            "company_name": document_metadata.company_name or None,
+            "report_date": None if document_metadata.report_date == "1900-01-01" else document_metadata.report_date
+        }
+        all_chunks: List[ChunkData] = []
+        for sec in sections:
+            title = sec.get("section_heading", "Unknown")
+            text = sec.get("content_markdown", "").strip()
+            if not text:
+                print(f"Skipping empty '{title}'"); continue
 
-        # Retrieve key metadata from the document_metadata object for copying
-        doc_specific_type = document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else None # Use .value for enum
-        doc_year = document_metadata.doc_year if document_metadata.doc_year != -1 else None # Use None for -1 placeholder
-        doc_quarter = document_metadata.doc_quarter if document_metadata.doc_quarter != -1 else None # Use None for -1 placeholder
-        company_name = document_metadata.company_name if document_metadata.company_name else None # Use None for empty string placeholder
-        # Convert report_date string placeholder to None if needed, or handle date conversion later
-        report_date_str = document_metadata.report_date if document_metadata.report_date != "1900-01-01" else None
+            print(f"Chunking '{title}'...")
+            chunks = self.chunker.chunk(text)
+            if not chunks:
+                print(f"No chunks for '{title}'"); continue
 
-
-        for section in sections:
-            section_id = section.get("id", uuid.uuid4())
-            section_heading = section.get("section_heading", "Unknown Section")
-            section_markdown = section.get("content_markdown", "")
-
-            if not section_markdown.strip():
-                print(f"Section '{section_heading}' ({section.get('section_index', 'N/A')}) has no content, skipping chunking.")
-                continue # Skip chunking for empty sections
-
-            print(f"Chunking section '{section_heading}' (Index: {section.get('section_index', 'N/A')})...")
-
-            # Use the RecursiveChunker on the markdown content of THIS section
-            section_chonkie_chunks = self.chunker.chunk(section_markdown)
-
-            if not section_chonkie_chunks:
-                 print(f"No chunks generated by chonkie for section '{section_heading}'.")
-                 continue # Skip if chonkie returns nothing
-
-            # Prepare data for each generated chunk
-            for chunk_index, chonkie_chunk in enumerate(section_chonkie_chunks):
-                 chunk_data: ChunkData = {
-                    # ID will be generated by the DB, but useful to structure here
-                    # "id": uuid.uuid4(),
-
-                    "section_id": section_id,
+            sec_id = sec.get("id", uuid.uuid4())
+            for idx, c in enumerate(chunks):
+                all_chunks.append({
+                    **meta,
+                    "section_id": sec_id,
                     "document_id": document_id,
-                    "user_id": user_id, # Crucial for RLS
+                    "user_id": user_id,
+                    "chunk_text": c.text,
+                    "chunk_index": idx,
+                    "start_char_index": c.start_index,
+                    "end_char_index": c.end_index,
+                    "section_heading": title,
+                    "metadata": {}
+                })
+            print(f"'{title}' → {len(chunks)} chunks")
 
-                    "chunk_text": chonkie_chunk.text,
-                    "chunk_index": chunk_index, # Index within this section
-                    "start_char_index": chonkie_chunk.start_index, # Position within section_markdown
-                    "end_char_index": chonkie_chunk.end_index, # Position within section_markdown
-                    # Embedding and embedding_model will be added by EmbeddingService
-
-                    # Copied Metadata for Filtering & Embedding Context
-                    # Copying from document_metadata and section
-                    "doc_specific_type": doc_specific_type,
-                    "doc_year": doc_year,
-                    "doc_quarter": doc_quarter,
-                    "company_name": company_name,
-                    "report_date": report_date_str, # Store as string for now, DB handles conversion
-                    "section_heading": section_heading,
-
-                    "metadata": {}, # JSONB field, add chunk-specific metadata if needed
-                 }
-                 all_chunks_data.append(chunk_data)
-
-            print(f"Chunked section '{section_heading}' into {len(section_chonkie_chunks)} chunks.")
-
-        print(f"ChunkingService completed. Total chunks generated: {len(all_chunks_data)}")
-        return all_chunks_data
+        print(f"Done: {len(all_chunks)} chunks total")
+        return all_chunks
