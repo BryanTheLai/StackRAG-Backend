@@ -1,10 +1,10 @@
 # src/services/Sectioner.py
 
 import re
-from typing import List, Dict, Any
+from typing import List
 import uuid
+from src.models.ingestion_models import SectionData
 
-SectionData = Dict[str, Any]
 
 class Sectioner:
     """

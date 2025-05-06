@@ -14,7 +14,7 @@ OUTPUT_FILENAME = "consolidated_code.md"
 
 # Optional: List of directory names to completely skip during scanning
 # Add any other folders within the TARGET_DIRECTORY you want to ignore.
-DIRECTORIES_TO_SKIP = {'data','.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules', 'output_folder'}
+DIRECTORIES_TO_SKIP = {'data','.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules', 'output_folder', 'experimental', 'notebooks','data'}
 
 # Optional: List of specific file names (case-sensitive) to completely skip
 # regardless of which directory they are in.

@@ -1,7 +1,7 @@
 # src/services/EmbeddingService.py
 
-from typing import List, Dict, Any
-from src.services.ChunkingService import ChunkData
+from typing import List
+from src.models.ingestion_models import ChunkData
 from src.llm.OpenAIClient import OpenAIClient
 
 class EmbeddingService:

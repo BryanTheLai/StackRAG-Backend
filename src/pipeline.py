@@ -3,12 +3,16 @@
 import time
 import uuid
 from typing import IO, Optional, Dict, Any
-import io
 
 from src.llm.GeminiClient import GeminiClient
 from src.llm.OpenAIClient import OpenAIClient
-from src.services.FinancialDocParser import FinancialDocParser, ParsingResult
-from src.services.MetadataExtractor import MetadataExtractor, FinancialDocumentMetadata
+from src.services.FinancialDocParser import FinancialDocParser
+from src.services.MetadataExtractor import MetadataExtractor
+
+from src.models.ingestion_models import ParsingResult, SectionData, ChunkData
+
+from src.models.metadata_models import FinancialDocumentMetadata
+
 from src.services.Sectioner import Sectioner
 from src.services.ChunkingService import ChunkingService
 from src.services.EmbeddingService import EmbeddingService

@@ -1,15 +1,13 @@
 # src/services/SupabaseService.py
 
 import os
-import io
 import uuid
-from datetime import date
-from typing import List, Dict, Any, Optional, IO
+from typing import List, Optional, IO
 from dotenv import load_dotenv
 from supabase import create_client, Client
-from src.services.Sectioner import SectionData
-from src.services.ChunkingService import ChunkData
-from src.services.MetadataExtractor import FinancialDocumentMetadata
+from src.models.ingestion_models import SectionData, ChunkData
+from src.models.metadata_models import FinancialDocumentMetadata
+
 
 class SupabaseService:
     """Handles storage and database operations with Supabase."""

@@ -1,10 +1,8 @@
-from typing import List, Dict, Any
+from typing import List
 import uuid
 from chonkie import RecursiveChunker
-from src.services.Sectioner import SectionData
-from src.services.MetadataExtractor import FinancialDocumentMetadata
-
-ChunkData = Dict[str, Any]
+from src.models.ingestion_models import ChunkData, SectionData
+from src.models.metadata_models import FinancialDocumentMetadata
 
 class ChunkingService:
     """Split markdown into fixed-size chunks."""

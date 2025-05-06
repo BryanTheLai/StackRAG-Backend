@@ -3,12 +3,12 @@
 import time
 import pymupdf as fitz
 import concurrent.futures
-from typing import Optional, Dict, Any, Tuple, IO
+from typing import Optional, Dict, Any, IO
 from google.genai import types
 from src.llm.GeminiClient import GeminiClient
 from src.prompts.prompt_manager import PromptManager
 
-ParsingResult = Dict[str, Any]
+from src.models.ingestion_models import ParsingResult
 
 class FinancialDocParser:
     """
