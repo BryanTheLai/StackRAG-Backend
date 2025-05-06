@@ -5,7 +5,7 @@ from datetime import datetime
 # --- Configuration ---
 # HARDCODE the exact, full path to the directory you want to scan.
 # Use a raw string (r"...") or double backslashes (\\) for Windows paths.
-TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\AI-CFO-FYP\src"
+TARGET_DIRECTORY = r"C:\Users\wbrya\OneDrive\Documents\GitHub\AI-CFO-FYP"
 
 # Set the name for the output file.
 # It will be created in the directory where you run the script.
@@ -14,11 +14,11 @@ OUTPUT_FILENAME = "consolidated_code.md"
 
 # Optional: List of directory names to completely skip during scanning
 # Add any other folders within the TARGET_DIRECTORY you want to ignore.
-DIRECTORIES_TO_SKIP = {'data','.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules', 'output_folder', 'experimental', 'notebooks','data'}
+DIRECTORIES_TO_SKIP = {'.venv','data','.git', '.vscode', '.idea', 'target', 'build', '__pycache__', 'node_modules', 'output_folder', 'experimental', 'notebooks','data'}
 
 # Optional: List of specific file names (case-sensitive) to completely skip
 # regardless of which directory they are in.
-FILES_TO_SKIP = {'__init__.py', 'setup.py', '.env', '.env.example', 'README.md'}
+FILES_TO_SKIP = {'__init__.py', 'setup.py', '.env', 'scraper.py', '.env.example', 'README.md','consolidated_code.md'}
 # --- End Configuration ---
 
 
