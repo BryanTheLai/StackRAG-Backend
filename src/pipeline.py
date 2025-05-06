@@ -16,7 +16,7 @@ from src.models.metadata_models import FinancialDocumentMetadata
 from src.services.Sectioner import Sectioner
 from src.services.ChunkingService import ChunkingService
 from src.services.EmbeddingService import EmbeddingService
-from src.services.SupabaseService import SupabaseService
+from src.storage.SupabaseService import SupabaseService
 
 PipelineResult = Dict[str, Any]
 
