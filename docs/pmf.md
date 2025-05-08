@@ -1,6 +1,6 @@
 # AI CFO Assistant: Strategic Roadmap & PMF Playbook
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** May 7, 2025
 
 ## 1. Core Mission & Value Proposition
@@ -20,6 +20,7 @@
 *   Income Statements (I/S)
 *   Cash Flow Statements (C/F)
 *   *(Potential Future)* Journal Entries (JEs)
+*   *(Potential Future, for specific analyses)* Budgets (for variance/flux)
 
 **Rationale for Narrow Focus:**
 *   **High Information Density:** These documents contain aggregated, critical data for analysis and reporting.
@@ -80,7 +81,7 @@ PMF is the paramount goal. It will be achieved by relentlessly solving a specifi
 
 ### 4.1. Current Core Functionality (Leveraging Ingestion Pipeline):
 
-*   **Secure PDF Ingestion:** Upload B/S, I/S, C/F.
+*   **Secure PDF Ingestion:** Upload B/S, I/S, C/F (and potentially budgets).
 *   **Multimodal Parsing:** PDF to structured Markdown.
 *   **Metadata Extraction:** Document type, date, company.
 *   **Sectioning & Chunking:** Logical content division.
@@ -89,15 +90,16 @@ PMF is the paramount goal. It will be achieved by relentlessly solving a specifi
 
 ### 4.2. Future Evolution (Towards a "Digital Finance Analyst"):
 
-*   **Enhanced Structured Extraction:** Handle wider variations in PDF layouts, complex tables, footnotes.
-*   **Cross-Document Relational Analysis:** Link data across multiple statements (e.g., track an asset from B/S through cash flow impacts).
-*   **Deterministic Calculations (Tool Use):** Reliable financial ratio calculations, variance analysis (Actual vs. Budget if budgets are ingested) using structured data. No AI for the math itself.
+*   **Enhanced Structured Extraction:** Handle wider variations in PDF layouts, complex tables, footnotes. If contracts are ingested, extract key terms for `Revenue Recognition` inputs.
+*   **Cross-Document Relational Analysis & Intelligent Temporal Mapping:** Link data across multiple statements and over time (e.g., track an asset from B/S through cash flow impacts over different periods, map fiscal periods intelligently).
+*   **Deterministic Calculations (Tool Use):** Reliable financial ratio calculations, `variance analysis` (Actual vs. Budget if budgets are ingested), and `flux analysis` (period-over-period changes) using structured data. No AI for the math itself.
 *   **GenAI for Narrative & Interface:**
     *   Natural Language Querying of extracted structured data and textual context.
-    *   Drafting variance explanations or report summaries based on structured data and contextual notes.
+    *   Drafting variance/flux explanations or report summaries based on structured data and contextual notes.
     *   *Not* for performing core calculations or replacing human judgment on accounting rules.
 *   **Integration Hub:** API-first approach for seamless data flow to/from spreadsheets, QuickBooks, Xero, FP&A tools.
-*   **Predictive Insights (Long-term):** Anomaly detection, cash flow modeling based on historical extracted data.
+*   **Predictive Insights (Long-term):** Anomaly detection, cash flow modeling, assistance with `budget forecast` inputs, and high-level `Monte Carlo simulations` for scenario analysis based on historical extracted data and user-defined assumptions.
+*   **Very Long-Term Scope Expansion (Beyond Core Statements):** Potential future capabilities in areas like `Expense Management`, `Procurement & Vendor Management`, and `Accounts Payable Automation` if the product broadens significantly from its initial focus.
 
 ### 4.3. Non-AI "Schlepy" Fixes to Complement:
 
@@ -110,19 +112,19 @@ PMF is the paramount goal. It will be achieved by relentlessly solving a specifi
 This research validates the market need and direction. AI CFO will initially target document-centric aspects.
 
 *   **Financial Close and Reporting:**
-    *   *AI CFO Focus:* Parsing statements (B/S, I/S, C/F, JEs) for reconciliation input, providing data for flux analysis, extracting key metrics for commentary.
+    *   *AI CFO Focus:* Parsing statements (B/S, I/S, C/F, JEs) for reconciliation input, providing structured data for `flux analysis` (period-over-period changes) and `variance analysis` (actual vs. budget, if budgets ingested), extracting key metrics for commentary.
     *   *Research:* Automated reconciliation, AI-powered flux analysis, generating commentary for key metrics[^1_18].
 *   **Financial Planning and Analysis (FP&A):**
-    *   *AI CFO Focus:* Extracting historicals from statements for model input, providing data for variance analysis, enabling natural language query of historical financial data.
-    *   *Research:* Variance analysis, natural language querying, automating basic financial modeling inputs[^1_18].
+    *   *AI CFO Focus:* Extracting historicals from statements for model input, providing structured data for `variance analysis` and `flux analysis`, enabling natural language query of historical financial data to support `budget forecast` activities.
+    *   *Research:* Variance analysis, natural language querying, automating basic financial modeling inputs[^1_18]. *Potential Future:* Supporting high-level `Monte Carlo simulation` inputs.
 *   **Accounts Receivable and Revenue Recognition:**
-    *   *AI CFO (Future - if contracts ingested):* Ingesting contracts, extracting key terms for revenue recognition calculations.
+    *   *AI CFO (Future - if contracts ingested):* Ingesting contracts, extracting key terms for `Revenue Recognition` calculations.
     *   *Research:* Automatically ingesting contracts, creating invoice schedules, running rev rec calcs[^1_18].
 *   **Procurement and Accounts Payable (Initial De-emphasis for core statements, but future potential):**
-    *   *AI CFO (Longer-term, if scope expands):* Extracting data from vendor invoices/contracts.
+    *   *AI CFO (Longer-term, if scope expands to `Expense Management, Procurement & Vendor Management, AP Automation`):* Extracting data from vendor invoices/contracts.
     *   *Research:* Extracting data from vendor documents, analyzing vendor risk[^1_18].
 *   **Compliance and Tax:**
-    *   *AI CFO Focus:* Providing accurate, auditable data extracted from source financial statements. Automated audit trails via processing logs.
+    *   *AI CFO Focus:* Providing accurate, auditable data extracted from source financial statements. Automated `audit trails` via processing logs and secure data handling (see Section 7).
     *   *Research:* Data entry automation and error checking for financial documentation[^1_18][^1_19].
 
 **Adoption Rates:** Financial transaction processing (77%), risk assessment (65%), financial reporting & analytics (59%) are high-focus areas[^1_19]. Your focus on reporting & analytics data extraction aligns perfectly.
@@ -139,7 +141,7 @@ This research validates the market need and direction. AI CFO will initially tar
 
 *   **"Structured Data is the New Oil":** Once data is reliably structured from documents, many subsequent analytical tasks become simpler and may not require complex AI. The hard part is the initial extraction.
 *   **AI for the "Last Mile" of Explanation:** Use GenAI for summarizing, explaining, and interfacing, but rely on deterministic methods for core calculations and data retrieval from the structured store.
-*   **Compliance as a Conversion Driver:** Incorporating features that help with audit trails or data sourcing for compliance can be a strong selling point.
+*   **Robust Audit Trails for Compliance:** Implementing comprehensive `audit trails` within the SaaS platform not only supports user compliance needs but can be a key differentiator and conversion driver.
 *   **Terms & Conditions (Crucial):** Clearly disclaim financial advice and limit liability. Emphasize user responsibility for verifying AI-generated outputs. The AI is an assistant, not the final decision-maker.
 *   **The "Hidden Cost of Context Switching":** Quantify and message how your solution reduces time wasted jumping between PDFs and spreadsheets.
 *   **API-First for Ecosystem:** Plan for robust API access from the start to enable integrations.
@@ -151,11 +153,12 @@ This research validates the market need and direction. AI CFO will initially tar
 *   **Calculation Tools:** Build deterministic Python functions for common financial ratios/calculations, callable via AI or directly.
 *   **FastAPI:** Continue developing API for upload, query, and data export.
 *   **User Authentication:** Ensure robust user authentication for all API endpoints.
+*   **Audit Trail System:** Design and implement a logging system that captures key actions (uploads, processing, queries, data extraction events) for audit trail purposes.
 
 ## 9. Key Risks & Mitigation
 
 *   **Extraction Accuracy:** The biggest technical risk. Mitigation: Rigorous testing, human-in-the-loop for low-confidence extractions, continuous model improvement, focus on common statement formats initially.
-*   **User Trust/Adoption:** Overcoming skepticism about AI for financial data. Mitigation: Transparency, strong disclaimers, focus on verifiable data extraction, easy source linking, excellent accuracy.
+*   **User Trust/Adoption:** Overcoming skepticism about AI for financial data. Mitigation: Transparency, strong disclaimers, focus on verifiable data extraction, easy source linking, excellent accuracy, robust audit trails.
 *   **Scalability of Formats:** Handling the vast diversity of PDF statement layouts. Mitigation: Start with common formats (e.g., from QuickBooks, Xero), incrementally add support, adaptive template recognition.
 *   **Competition:** Both generic document AI and specialized finance tools. Mitigation: Deep specialization on B/S, I/S, C/F extraction, ease of integration, strong PMF with a core group.
 
