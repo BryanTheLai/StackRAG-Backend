@@ -1,0 +1,22 @@
+Based on the user's original question: "{{user_original_query}}"
+And the following information snippets I retrieved for you:
+
+{{formatted_snippets_text}}
+
+Please perform the following steps:
+1. Carefully review the information snippets.
+2. Answer the user's original question using ONLY the information present in these snippets. Do not use any prior knowledge or external information.
+3. If the answer cannot be found in the provided snippets, clearly state that the information is not available in the documents. Your response should still be polite and acknowledge the query.
+4. After your answer, include a "Sources:" section on a new line.
+5. In the "Sources:" section, list each snippet number you explicitly used to construct your answer, along with its corresponding document name and section ID, formatted as a Markdown link.
+6. The Markdown link format MUST be exactly: `[<Snippet Number>. (<Source Document Name>)](https://{{YOUR_APP_DOMAIN}}/document?section_id=<Source Section ID>)`
+   - Replace `<Snippet Number>` with the number from the "[Snippet X]" heading in the snippets I provided (e.g., 1, 2).
+   - Replace `<Source Document Name>` with the 'Source Document' name provided for that snippet.
+   - Replace `<Source Section ID>` with the 'Source Section ID' provided for that snippet.
+
+Example of a "Sources:" section entry if Snippet 1 was from 'report.pdf' with section ID 'abc-123':
+Sources:
+[1. (report.pdf)](https://{{YOUR_APP_DOMAIN}}/document?section_id=abc-123)
+
+If you use information from multiple snippets, list them all under the "Sources:" heading, each on a new line using the specified Markdown link format.
+If no snippets were found or if the snippets do not contain the answer, do not include a "Sources:" section, but state clearly that the information could not be found in the provided documents based on the provided documents.
