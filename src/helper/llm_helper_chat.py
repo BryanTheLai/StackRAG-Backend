@@ -1,10 +1,9 @@
-# --- HELPER FUNCTION: Serialize conversation history for printing ---
 import json
 import traceback
 
 from src.prompts.prompt_manager import PromptManager
 
-
+# --- HELPER FUNCTION: Serialize conversation history for printing ---
 def serialize_conversation_history(history: list) -> list:
     serializable_history = []
     for content_item in history:

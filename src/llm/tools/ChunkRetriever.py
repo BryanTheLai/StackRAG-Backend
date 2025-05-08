@@ -1,17 +1,11 @@
-# src/services/RetrievalService.py
 import uuid
 import json
 import traceback
-# No need for sys.path modification inside a module if called correctly from root
-
 from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
-from src.enums import FinancialDocSpecificType # Needed for enum values in declaration
-from google.genai import types # Needed for tool declaration type hint
+from src.enums import FinancialDocSpecificType
+from google.genai import types 
 
-# --- TOOL FUNCTION DECLARATION DATA ---
-# This dictionary describes the tool to the LLM.
-# We'll associate it with the class.
 RETRIEVE_CHUNKS_DECLARATION_DATA = {
     "name": "retrieve_financial_chunks",
     "description": "Searches and retrieves relevant text chunks from the user's uploaded financial documents based on their query and optional filters like company name, document type, year range, or quarter. Always use this tool to find information before answering questions about the user's financial documents.",
