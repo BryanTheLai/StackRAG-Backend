@@ -167,8 +167,11 @@ Accuracy and trustworthiness are paramount for financial data. The system priori
 
 *   **Language:** Python 3.x
 *   **AI Models:**
-    *   Google Gemini API (`google-genai`): For multimodal parsing and structured metadata extraction.
-    *   OpenAI API (`openai`): For text embeddings (`text-embedding-3-small`).
+    *   Google Gemini API (`google-genai`):
+        *   `gemini-2.0-flash-lite`: For multimodal parsing and structured metadata extraction.
+        *   `gemini-2.0-flash` (default): For chat-based answer generation.
+    *   OpenAI API (`openai`):
+        *   `text-embedding-3-small`: For text embeddings.
 *   **Backend:** **Supabase**
     *   Database: PostgreSQL with `pgvector` extension.
     *   Authentication: Supabase Auth.
