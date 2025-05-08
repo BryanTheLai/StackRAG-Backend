@@ -80,7 +80,7 @@ def print_final_formatted_answer(answer_text: str):
     print("****************************************\n")
 
 # --- PROMPT FUNCTION: Craft instructions for final answer + citation links ---
-def create_final_answer_instructions(user_original_query: str, formatted_snippets_text: str, YOUR_APP_DOMAIN: str ) -> str:
+def create_final_answer_instructions(user_original_query: str, formatted_snippets_text: str, YOUR_APP_DOMAIN: str = "www.stackifier.com") -> str:
     instructions = PromptManager.get_prompt(
         "citation_answer", user_original_query = user_original_query,  formatted_snippets_text = formatted_snippets_text, YOUR_APP_DOMAIN = YOUR_APP_DOMAIN
     )
