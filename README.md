@@ -55,9 +55,10 @@
     *   [8.2 The Need for Rigorous, Quantitative Evals](#82-the-need-for-rigorous-quantitative-evals)
     *   [8.3 Test Data](#83-test-data)
     *   [8.4 Creating Test Cases](#84-creating-test-cases)
-    *   [8.5 Measuring Performance](#85-measuring-performance)
-    *   [8.6 Automation](#86-automation)
-    *   [8.7 Improving with Evaluation](#87-improving-with-evaluation)
+    *   [8.5 Measuring Performance - Overview](#85-measuring-performance---overview)
+    *   [8.6 RAG Evaluation: Key Tips & Metrics](#86-rag-evaluation-key-tips--metrics)
+    *   [8.7 Automation](#87-automation)
+    *   [8.8 Improving with Evaluation](#88-improving-with-evaluation)
 *   [Chapter 9: Building the System (Current State)](#chapter-9-building-the-system-current-state)
     *   [9.1 Technology Summary](#91-technology-summary)
     *   [9.2 Key Libraries Used](#92-key-libraries-used)
@@ -522,11 +523,96 @@ We measure several things automatically using our Golden Dataset:
 *   **Refusal Accuracy:** Did it correctly refuse to answer when it should have?
 *   **Structured Extraction Accuracy:** For tasks like table or key metric extraction, evaluate if the structured data output matches the ground truth.
 
-## 8.6 Automation
+## 8.6 RAG Evaluation: Key Tips & Metrics
+
+Evaluating a Retrieval-Augmented Generation (RAG) system effectively is crucial for building reliable financial tools. Here are key tips and metrics:
+
+**Core Principle:** Evaluate the **Retriever** (finds info) and the **Generator** (creates answer) separately and together.
+
+#### I. High-Value Evaluation Tips:
+
+1.  **Smart Test Data is King:**
+    *   **"Golden" Datasets:** Manually create/verify a set of (Question, Ideal Answer, Ideal Source Document(s)/Chunk(s)) specific to your financial domain. This is your ground truth.
+    *   **Synthetic Data Nuance:** Use LLMs to generate diverse Question-Answer pairs *from your documents*.
+        *   **Tip:** Don't just ask for "questions." Use varied prompts: "Generate a question whose answer requires combining info from paragraph X and Y," or "Generate a question that is plausible but *not* answerable by this text."
+        *   **Quality Check:** Always review a sample of synthetic data. Have another LLM (or human) critique generated QA pairs for relevance and accuracy.
+
+2.  **LLM-as-a-Judge (Carefully!):** Use another LLM to assess aspects hard for traditional metrics.
+    *   **Tip:** Be specific with "judge" prompts. Don't ask "Is this good?". Ask:
+        *   *"Faithfulness:"* "Does the answer contain any information NOT present in the provided context? (Yes/No). If Yes, which part?"
+        *   *"Relevance:"* "On a scale of 1-5, how relevant is the answer to the original question?"
+    *   **Calibration:** Regularly compare judge LLM outputs with human judgments on a small subset to check for bias or drift.
+
+3.  **Focus on Failure Modes:**
+    *   **Tip:** Actively create test cases that target known weaknesses (e.g., complex table interpretation, date reasoning, specific financial jargon). This helps in targeted improvements.
+
+4.  **The Iterative Loop:**
+    *   **Evaluate -> Analyze Failures -> Hypothesize Fix -> Implement -> Re-Evaluate.** This cycle drives continuous improvement. Don't treat evaluation as a one-off.
+
+#### II. Key Metrics (Most Useful & Actionable):
+
+Focus on metrics that provide clear signals for improvement.
+
+**A. Evaluating the Retriever (How well do we find the right context?):**
+
+*   **1. Context Precision (LLM-as-Judge):**
+    *   **What it is:** Measures if the retrieved chunks are truly relevant to the question.
+    *   **How:** For each retrieved chunk, ask a judge LLM: "Is this chunk relevant for answering the question: '[Question]'? (Yes/No/Partially)."
+    *   **Metric:** % of retrieved chunks marked "Yes" or "Partially."
+    *   **Example:** Query: "What was ACME Corp's Q3 revenue?"
+        *   Chunk 1 (ACME Q3 Report Intro): Partially relevant.
+        *   Chunk 2 (ACME Q3 Financials Table): Yes, relevant.
+        *   Chunk 3 (Competitor X Analysis): No, irrelevant.
+        *   Precision for this query (top 3): (1 Yes + 1 Partial) / 3 chunks = ~66% relevant context.
+    *   **Why it's useful:** Directly tells you if you're feeding good information to the generator. High context precision is foundational.
+
+*   **2. Context Recall (LLM-as-Judge - more advanced, requires ground truth context):**
+    *   **What it is:** Of all the truly relevant information in your *entire dataset* for a given question, how much did your retriever find?
+    *   **How:** Identify all ground truth chunks/sentences. Check if they were among the retrieved items.
+    *   **Metric:** (Number of relevant ground truth items retrieved) / (Total number of relevant ground truth items).
+    *   **Why it's useful:** Helps identify if critical information is being missed entirely by the retriever. This is harder to automate fully without well-defined ground truth.
+
+*   **3. Mean Reciprocal Rank (MRR) for Top-K Retrieval:**
+    *   **What it is:** Measures how high up the *first* correct/relevant chunk appears in your ranked list of retrieved chunks.
+    *   **How:** For each query, find the rank (position) of the first relevant chunk. MRR is the average of (1/rank) across all queries.
+    *   **Metric:** Value between 0 and 1. Higher is better.
+    *   **Example:**
+        *   Query 1: First relevant chunk at rank 1 -> Reciprocal Rank = 1/1 = 1
+        *   Query 2: First relevant chunk at rank 3 -> Reciprocal Rank = 1/3 = 0.33
+        *   Query 3: No relevant chunk in top K -> Reciprocal Rank = 0
+        *   MRR (for these 3) = (1 + 0.33 + 0) / 3 = ~0.44
+    *   **Why it's useful:** Good for scenarios where users primarily look at the very top results. Simple to calculate if you can identify the "first relevant" item.
+
+**B. Evaluating the Generator (How good is the final answer, given the context?):**
+
+*   **1. Faithfulness / Groundedness (LLM-as-Judge):**
+    *   **What it is:** Does the generated answer *only* use information from the retrieved context? Does it avoid making things up (hallucinating)?
+    *   **How:** Judge LLM compares the generated answer against the *actually retrieved context* for that query. (See LLM-as-a-Judge tip above).
+    *   **Metric:** % of answers deemed faithful.
+    *   **Example:**
+        *   Context: "ACME revenue was $10M."
+        *   Question: "What was ACME's revenue?"
+        *   Answer 1 (Faithful): "ACME's revenue was $10M." -> Score: Faithful
+        *   Answer 2 (Unfaithful): "ACME's revenue was $10M, and they are planning an IPO." (IPO info not in context) -> Score: Unfaithful
+    *   **Why it's useful:** Critical for reliability, especially in finance.
+
+*   **2. Answer Relevance (LLM-as-Judge):**
+    *   **What it is:** Does the generated answer directly and appropriately address the user's question?
+    *   **How:** Judge LLM compares the generated answer to the original user question. (See LLM-as-a-Judge tip above for scale).
+    *   **Metric:** Average relevance score (e.g., on 1-5 scale) or % of answers rated highly relevant.
+    *   **Example:**
+        *   Question: "What were the main drivers of profit growth for Q2?"
+        *   Answer 1 (Relevant): "The main drivers were increased sales in Segment A and cost reductions in operations." -> Score: 5/5
+        *   Answer 2 (Less Relevant): "Profit growth is important for companies." -> Score: 2/5
+    *   **Why it's useful:** Ensures the LLM isn't just babbling correctly based on context but is actually answering the *specific question asked*.
+
+**Remember:** No single metric tells the whole story. Use a combination, and always connect metrics back to the user experience and business goals.
+
+## 8.7 Automation
 
 We use an automated script to run all the test cases against the system and calculate these metrics. This lets us quickly see how changes affect performance.
 
-## 8.7 Improving with Evaluation
+## 8.8 Improving with Evaluation
 
 Testing isn't just the end; it's part of development. We:
 1.  Run tests to see where the system is weak (e.g., struggles with specific table formats, misinterprets dates, hallucinates numbers).
