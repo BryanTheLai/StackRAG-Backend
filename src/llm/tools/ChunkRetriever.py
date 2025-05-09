@@ -61,7 +61,7 @@ class RetrievalService:
         """
         Returns the Gemini tool declaration for the retrieve_financial_chunks function.
         """
-        return types.Tool(function_declarations=[RETRIEVE_CHUNKS_DECLARATION_DATA])
+        return RETRIEVE_CHUNKS_DECLARATION_DATA
 
     def retrieve_chunks(
         self,
