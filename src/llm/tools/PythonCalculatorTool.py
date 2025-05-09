@@ -63,12 +63,10 @@ class PythonCalculationTool:
 
     @staticmethod
     def get_tool_declaration() -> genai_types.Tool:
-        func_decl = genai_types.FunctionDeclaration(
-            name=PYTHON_CALCULATION_TOOL_DECLARATION_DATA["name"],
-            description=PYTHON_CALCULATION_TOOL_DECLARATION_DATA["description"],
-            parameters=genai_types.Schema(**PYTHON_CALCULATION_TOOL_DECLARATION_DATA["parameters"])
-        )
-        return genai_types.Tool(function_declarations=[func_decl])
+        """ 
+        Returns the Gemini tool declaration for the execute_python_calculations function.
+        """
+        return genai_types.Tool(function_declarations=[PYTHON_CALCULATION_TOOL_DECLARATION_DATA])
 
     def execute_code(self, python_code: str) -> str:
         if not isinstance(python_code, str):
