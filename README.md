@@ -724,14 +724,18 @@ The immediate next steps involve completing the "query/answer" side of the appli
 
 ### 12.2 Future Enhancements
 
-*   Support for other file types (DOCX, XLSX).
-*   OCR for scanned PDFs.
+*   **Templated Reporting & Dashboards:** Develop features to generate standardized reports (e.g., summaries, variance analyses) or visual dashboards using customizable templates populated with extracted and calculated data.
+*   Anomaly Detection: Implement capabilities to automatically flag unusual data points or trends within financial documents or across multiple reports.
+*   Other external data sources like Google Drive (with strict access controls).
+*   User feedback mechanisms for continuous improvement.
+*   More robust error handling and logging throughout the query/answer pipeline.
 *   More sophisticated table extraction and financial statement recognition.
+*   Support for other file types (DOCX, XLSX).
 *   Advanced context retrieval techniques (e.g., graph-based methods, query transformation).
 *   Fine-tuning embedding or re-ranking models.
-*   More robust error handling and logging throughout the query/answer pipeline.
-*   User feedback mechanisms for continuous improvement.
-*   Integration with calendars or other external data sources (with strict access controls).
+*   OCR for scanned PDFs.
+
+
 
 ---
 
