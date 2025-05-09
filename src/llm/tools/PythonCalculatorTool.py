@@ -7,7 +7,7 @@ from google.genai import types as genai_types
 import contextlib
 from typing import List, Dict, Tuple, Any, Union
 
-PYTHON_CALCULATION_TOOL_DECLARATION_DATA = {
+PYTHON_CALCULATION_TOOL_DECLARATION_DATA: Dict = {
     "name": "execute_python_calculations",
     "description": (
         "Executes Python code for calculations. Pre-loaded and available directly: "
@@ -64,13 +64,13 @@ class PythonCalculationTool:
         }
 
     @staticmethod
-    def get_tool_declaration() -> genai_types.Tool:
+    def get_tool_declaration_data() -> Dict:
         """ 
         Returns the Gemini tool declaration for the execute_python_calculations function.
         """
-        return genai_types.Tool(function_declarations=[PYTHON_CALCULATION_TOOL_DECLARATION_DATA])
+        return PYTHON_CALCULATION_TOOL_DECLARATION_DATA
 
-    def execute_code(self, python_code: str) -> str:
+    def execute_python_calculations(self, python_code: str) -> str:
         if not isinstance(python_code, str):
             return "Error: Python code must be a non-empty string."
 
