@@ -14,8 +14,9 @@ PYTHON_CALCULATION_TOOL_DECLARATION_DATA = {
         "'math' module, 'pandas' (as 'pd'), 'numpy' (as 'np'). "
         "Common typing objects like `List`, `Dict`, `Tuple`, `Any`, `Union` are also pre-loaded and available directly. "
         "The variable '__name__' is set to '__main__'. "
-        "Do NOT import modules (like 'os' or re-import 'math'). Your code MUST assign the final string result to a variable named 'calculation_result'. "
+        "Your code MUST assign the final string result to a variable named 'calculation_result'. "
         "Print statements are also captured. Class definitions, 'eval()', and 'globals()' calls are not supported."
+        " You can use 'import' statements for standard Python libraries if needed, but core modules like 'math', 'pd', 'np' are already available."
     ),
     "parameters": {
         "type": "object",
@@ -39,6 +40,7 @@ class PythonCalculationTool:
         self._original_math_pi = math.pi
 
         self._safe_builtins = {
+            '__import__': __import__,
             'print': print, 'str': str, 'int': int, 'float': float, 'bool': bool,
             'list': list, 'dict': dict, 'tuple': tuple, 'set': set,
             'len': len, 'range': range, 'abs': abs, 'round': round,
