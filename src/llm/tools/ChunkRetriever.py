@@ -1,10 +1,10 @@
+from typing import Dict
 import uuid
 import json
 import traceback
 from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 from src.enums import FinancialDocSpecificType
-from google.genai import types 
 
 RETRIEVE_CHUNKS_DECLARATION_DATA = {
     "name": "retrieve_financial_chunks",
@@ -57,7 +57,7 @@ class RetrievalService:
         self._supabase_service = supabase_service
 
     @staticmethod
-    def get_tool_declaration() -> types.Tool:
+    def get_tool_declaration() -> Dict:
         """
         Returns the Gemini tool declaration for the retrieve_financial_chunks function.
         """
