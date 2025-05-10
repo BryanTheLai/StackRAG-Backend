@@ -724,10 +724,16 @@ The immediate next steps involve completing the "query/answer" side of the appli
 
 ### 12.2 Future Enhancements
 
-*   **Templated Reporting & Dashboards:** Develop features to generate standardized reports (e.g., summaries, variance analyses) or visual dashboards using customizable templates populated with extracted and calculated data.
+*   **Integrations with External Data Sources:**
+    *   Connect with platforms like **QuickBooks** for direct access to accounting data.
+    *   Integrate with email services like **Gmail** to process financial documents (e.g., invoices, receipts) received via email, respecting user permissions and privacy.
+    *   Allow connections to other cloud storage services (e.g., Google Drive, Dropbox) for document ingestion, with strict access controls.
+*   **Templated Reporting & Real-Time Dashboards:**
+    *   Develop features to generate standardized reports (e.g., summaries, variance analyses) using customizable templates populated with extracted and calculated data.
+    *   Implement **real-time dashboards** that are dynamically updated based on newly ingested documents and data from integrated knowledge bases (like QuickBooks).
+*   **Spreadsheet Export Functionality:**
+    *   Allow users to export extracted data, tables, and analysis results to common spreadsheet formats (e.g., CSV, XLSX).
 *   Anomaly Detection: Implement capabilities to automatically flag unusual data points or trends within financial documents or across multiple reports.
-*   Other external data sources like Google Drive (with strict access controls).
-*   RAG need embeddings, what if internal google like Search Engine for retrieval instead.
 *   User feedback mechanisms for continuous improvement.
 *   More robust error handling and logging throughout the query/answer pipeline.
 *   More sophisticated table extraction and financial statement recognition.
@@ -735,8 +741,6 @@ The immediate next steps involve completing the "query/answer" side of the appli
 *   Advanced context retrieval techniques (e.g., graph-based methods, query transformation).
 *   Fine-tuning embedding or re-ranking models.
 *   OCR for scanned PDFs.
-
-
 
 ---
 
@@ -746,14 +750,16 @@ This chapter discusses the strategic landscape for AI applications, drawing insi
 
 ### 13.1 Market Validation: The Office of the CFO Needs
 
-Market analysis, such as insights from VC articles on the "Office of the CFO," strongly validates the core problem: the difficulty SMEs face in extracting insights from financial documents. Key pain points identified directly inform the value proposition and desired features:
+Market analysis, such as insights from VC articles on the "Office of the CFO," strongly validates the core problem: the difficulty SMEs face in extracting insights from financial documents and managing financial workflows. Key pain points identified directly inform the value proposition and desired features:
 
 *   Automating tasks within document-intensive workflows (e.g., processing reports).
+*   **Automating specific, time-consuming financial reconciliation and reporting tasks, thereby saving measurable hours for finance teams.**
 *   Supporting strategic and analytical activities (e.g., FP&A, forecasting) by synthesizing data from disparate sources.
 *   Addressing specific financial analysis needs (e.g., variance analysis, flux commentary, inputs for forecasting, multivariate analysis).
 *   A clear need for reliable calculation capabilities for financial metrics.
 
-This confirms that the focus on document processing, context retrieval, and tool-assisted generation for these specific financial tasks aligns with expressed market demand.
+This confirms that the focus on document processing, context retrieval, tool-assisted generation, and integrations for these specific financial tasks aligns with expressed market demand.
+
 
 ### 13.2 The "Bitter Lesson": Vertical vs. Horizontal AI Applications
 
