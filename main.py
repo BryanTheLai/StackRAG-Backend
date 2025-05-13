@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -6,99 +7,128 @@ from typing import List, Dict, Any, AsyncGenerator, Annotated
 import asyncio
 import json
 
-# --- Pydantic Models for input validation ---
+# --- Pydantic Models for Chat ---
+class FunctionCall(BaseModel):
+    name: str
+    args: Dict[str, Any]
+
+class FunctionResponse(BaseModel):
+    name: str
+    response: Dict[str, Any]
+
 class MessagePart(BaseModel):
     text: str | None = None
-    function_call: Dict[str, Any] | None = None
-    function_response: Dict[str, Any] | None = None
+    function_call: FunctionCall | None = None
+    function_response: FunctionResponse | None = None
 
 class HistoryTurn(BaseModel):
-    role: str
+    role: str           # e.g. "user", "model", or "function"
     parts: List[MessagePart]
 
-class ChatContextPayload(BaseModel): # Renamed for clarity
-    conversation_context: List[HistoryTurn] = Field(
-        ...,
-        description="The complete conversation history including the latest user message."
+class ChatPayload(BaseModel):
+    history: List[HistoryTurn] = Field(
+        ..., description="Complete conversation history including the latest user message."
     )
 
-# --- Dummy User Auth ---
-async def get_current_user_id() -> str:
-    print("Backend: get_current_user_id called")
-    return "test_user_123"
+# --- Authentication Dependency ---
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# --- FastAPI App Setup ---
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+async def get_current_user_id_from_token(
+    token: Annotated[str, Depends(oauth2_scheme)]
+) -> str:
+    """
+    Verify JWT and return user_id.
+    In production, decode and validate signature, claims, etc.
+    """
+    if token == "valid_jwt_token_for_user_123":
+        return "test_user_123"
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+# --- Simulated Chat Service ---
+class ChatService:
+    async def generate_response_stream(
+        self, user_id: str, full_history: List[HistoryTurn]
+    ) -> AsyncGenerator[str, None]:
+        """
+        Yield chunks of a dummy model response based on conversation history.
+        """
+        if not full_history:
+            yield "Error: Conversation history is empty."
+            return
+
+        # Summarize the last message for simulation
+        last = full_history[-1]
+        summary = "the last message"
+        if last.parts:
+            part = last.parts[0]
+            if part.text:
+                summary = f"user text '{part.text[:30]}...'"
+            elif part.function_call:
+                summary = f"function call '{part.function_call.name}'"
+            elif part.function_response:
+                summary = f"function response '{part.function_response.name}'"
+
+        await asyncio.sleep(0.1)
+
+        header = f"Model reply to {summary}: "
+        for ch in header:
+            yield ch
+            await asyncio.sleep(0.02)
+
+        for word in ["This ", "is ", "a ", "streamed ", "dummy ", "response. "]:
+            yield word
+            await asyncio.sleep(0.05)
+
+        yield "Stream complete."
+
+# --- FastAPI App Configuration ---
+app = FastAPI(
+    title="AI CFO Assistant - Chat API",
+    version="1.0.0",
+    description="Chat endpoint with server-sent events."
 )
 
-# --- Dummy LLM Interaction (Simulated) ---
-async def dummy_llm_streamer(
-    user_id: str,
-    full_conversation_context: List[HistoryTurn] # Now takes the full context
-) -> AsyncGenerator[str, None]:
-    print(f"\nBackend: Received full context for user '{user_id}':")
-    # For debugging, print the full context received
-    # print(f"Backend: Full Context JSON: {json.dumps([turn.model_dump() for turn in full_conversation_context], indent=2)}")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*", "127.0.0.1"],
+    allow_credentials=True,
+    allow_methods=["POST", "GET", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
+chat_service_instance = ChatService()
+def get_chat_service() -> ChatService:
+    return chat_service_instance
 
-    if not full_conversation_context or full_conversation_context[-1].role != "user":
-        yield "Error: Last message in context is not from user or context is empty."
-        print("Backend Error: Last message not from user or context empty.")
-        return
-
-    current_user_message_turn = full_conversation_context[-1]
-    current_user_message_text = ""
-    if current_user_message_turn.parts and current_user_message_turn.parts[0].text:
-        current_user_message_text = current_user_message_turn.parts[0].text
-    
-    print(f"Backend: Simulating response to user's last message: '{current_user_message_text}'")
-    print(f"Backend: Full history for LLM has {len(full_conversation_context)} turns.")
-
-
-    await asyncio.sleep(0.2) # Simulate processing time
-
-    # This part simulates the LLM generating ONLY the new response text
-    simulated_response_prefix = f"Model's new reply to '{current_user_message_text[:20]}...': "
-    for char_chunk in simulated_response_prefix:
-        yield char_chunk
-        await asyncio.sleep(0.03) # Slower for prefix
-
-    words = ["This ", "is ", "the ", "streamed ", "model ", "output ", "only. "]
-    for word in words:
-        yield word
-        await asyncio.sleep(0.08) # Slower for words
-    yield "Done streaming new reply!"
-
-
-# --- API Endpoint ---
-@app.post("/simple_chat_context_test") # Renamed endpoint for clarity
-async def handle_simple_chat_context_test(
-    payload: ChatContextPayload, # Use the new Pydantic model
-    user_id: Annotated[str, Depends(get_current_user_id)]
+# --- Streaming Chat Endpoint ---
+@app.post(
+    "/v1/chat/stream_response",
+    summary="Stream a chat response",
+    response_description="SSE stream of text chunks."
+)
+async def stream_chat_response(
+    payload: ChatPayload,
+    user_id: Annotated[str, Depends(get_current_user_id_from_token)],
+    chat_service: Annotated[ChatService, Depends(get_chat_service)]
 ):
-    print(f"Payload: \n{payload.model_dump_json(indent=2)}\n")
-    print(f"Backend: Received payload for user '{user_id}':")
-    # print(payload.model_dump_json(indent=2)) # For debugging the received payload
+    async def event_generator() -> AsyncGenerator[str, None]:
+        try:
+            async for chunk in chat_service.generate_response_stream(user_id, payload.history):
+                data = json.dumps({"text_chunk": chunk})
+                yield f"data: {data}\n\n"
+            yield "event: stream_end\ndata: {}\n\n"
+        except HTTPException:
+            raise
+        except Exception:
+            error = json.dumps({"error": "Internal server error."})
+            yield f"event: stream_error\ndata: {error}\n\n"
+            yield "event: stream_end\ndata: {}\n\n"
 
-    async def sse_event_stream() -> AsyncGenerator[str, None]:
-        async for token_text_chunk in dummy_llm_streamer(
-            user_id=user_id,
-            full_conversation_context=payload.conversation_context # Pass the whole context
-        ):
-            sse_formatted_data = f"data: {json.dumps({'text_chunk': token_text_chunk})}\n\n"
-            yield sse_formatted_data
-            # print(f"Backend: Sent chunk: {token_text_chunk}") # Can be noisy
-
-        yield "event: end_stream\ndata: {}\n\n"
-        print("Backend: Sent end_stream event")
-
-    return StreamingResponse(sse_event_stream(), media_type="text/event-stream")
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 if __name__ == "__main__":
     import uvicorn

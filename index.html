@@ -99,24 +99,28 @@
             userInput.value = '';
 
             // 2. Prepare payload for backend: Send the ENTIRE currentChatHistory
+            // The ChatPayload on the backend expects a field named "history"
             const payload = {
-                conversation_context: currentChatHistory // The full history including the new user message
+                history: currentChatHistory 
             };
             console.log("Frontend: Sending payload:", JSON.stringify(payload, null, 2));
 
 
             // 3. Call backend API
             try {
-                const response = await fetch('http://localhost:8000/simple_chat_context_test', { // Updated endpoint
+                const response = await fetch('http://localhost:8000/v1/chat/stream_response', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        // --- THIS IS THE FIX ---
+                        'Authorization': 'Bearer valid_jwt_token_for_user_123' 
+                        // --- END OF FIX ---
                     },
                     body: JSON.stringify(payload)
                 });
 
                 if (!response.ok || !response.body) {
-                    console.error("Error from backend:", response.status);
+                    console.error("Error from backend:", response.status, await response.text());
                     const errorTurn = { role: "model", parts: [{ text: `Error fetching response: ${response.status}` }] };
                     currentChatHistory.push(errorTurn);
                     renderChat();
@@ -152,19 +156,31 @@
                         const message = eventSourceStyleBuffer.substring(0, eolIndex);
                         eventSourceStyleBuffer = eventSourceStyleBuffer.substring(eolIndex + 2);
 
-                        if (message.startsWith('event: end_stream')) {
-                            console.log("Frontend: Received end_stream event.");
+                        if (message.startsWith('event: stream_end')) { // Check for custom end event
+                            console.log("Frontend: Received stream_end event.");
                              if(modelTurnPlaceholder.parts[0].text === "Streaming model reply..." && accumulatedModelText === "") {
-                                modelTurnPlaceholder.parts[0].text = "(Model stream ended before text after end_stream event)";
+                                modelTurnPlaceholder.parts[0].text = "(Model stream ended before text after stream_end event)";
                             }
                             renderChat();
-                            return; 
+                            return; // Exit loop as stream is explicitly finished by backend
+                        } else if (message.startsWith('event: stream_error')) { // Check for custom error event
+                             console.error("Frontend: Received stream_error event:", message);
+                             try {
+                                const errorDataJson = JSON.parse(message.substring(message.indexOf('data: ') + 'data: '.length));
+                                modelTurnPlaceholder.parts[0].text = `Stream Error: ${errorDataJson.error || 'Unknown error'}`;
+                             } catch(e){
+                                modelTurnPlaceholder.parts[0].text = "Stream Error: Could not parse error details.";
+                             }
+                             renderChat();
+                             // We might still get a stream_end event after this, or the stream might just close.
+                             // Depending on backend logic, we might not want to 'return' immediately here if stream_end is guaranteed.
+                             // For now, let's assume stream_error might be followed by stream_end or abrupt closure.
                         } else if (message.startsWith('data: ')) {
                             try {
                                 const jsonData = JSON.parse(message.substring('data: '.length));
                                 if (jsonData.text_chunk) {
                                     if (modelTurnPlaceholder.parts[0].text === "Streaming model reply...") {
-                                        accumulatedModelText = ""; 
+                                        accumulatedModelText = ""; // Reset if it's the first chunk
                                     }
                                     accumulatedModelText += jsonData.text_chunk;
                                     modelTurnPlaceholder.parts[0].text = accumulatedModelText; // Update the text of the model's turn
@@ -195,18 +211,18 @@
         // Initialize with your example history
         currentChatHistory = [
             {
-                "parts": [{"text": "Whats the Gross Carrying Amount for Total intangible assets for tesla in 2021? then divide the value by 0.04215215"}],
-                "role": "user"
+                "role": "user",
+                "parts": [{"text": "Whats the Gross Carrying Amount for Total intangible assets for tesla in 2021? then divide the value by 0.04215215"}]
             },
             {
-                "parts": [{"function_call": {"args": {"doc_year_start": 2021, "company_name": "Tesla", "doc_year_end": 2021, "query_text": "Gross Carrying Amount for Total intangible assets"}, "name": "retrieve_financial_chunks"}}],
-                "role": "model"
+                "role": "model",
+                "parts": [{"function_call": {"name": "retrieve_financial_chunks", "args": {"doc_year_start": 2021, "company_name": "Tesla", "doc_year_end": 2021, "query_text": "Gross Carrying Amount for Total intangible assets"}}}]
+                
             },
-            { // This is actually a "user" (tool) turn in Gemini's Content model
-                "parts": [{"function_response": {"name": "retrieve_financial_chunks", "response": {"output": "[...] some large JSON string of chunks [...]"}}}],
-                "role": "user" // Or "tool" if Gemini SDK distinguishes. For simplicity, sticking to user/model. Let's assume "user" for tool results sent back to model.
-            },
-            // ... other turns from your example
+            { 
+                "role": "user", // This conceptually represents a "tool" or "function" role in Gemini, where output of tool is sent back to model
+                "parts": [{"function_response": {"name": "retrieve_financial_chunks", "response": {"output": "[...] some large JSON string of chunks [...]"}}}]
+            }
         ];
 
 
