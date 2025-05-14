@@ -6,6 +6,15 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any, AsyncGenerator, Annotated
 import asyncio
 import json
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL") or exit("Error: SUPABASE_URL must be set")
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY") or exit("Error: SUPABASE_ANON_KEY must be set")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Pydantic Models for Chat ---
 class FunctionCall(BaseModel):
@@ -30,23 +39,41 @@ class ChatPayload(BaseModel):
         ..., description="Complete conversation history including the latest user message."
     )
 
+class Session(BaseModel):
+    user_id: str
+    token: str
 # --- Authentication Dependency ---
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+async def get_session(token: str = Depends(oauth2_scheme)) -> Session:
+    if not token:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    try:
+        res = supabase.auth.get_user(jwt=token)
+        user = res.user
+        if not user or not user.id:
+            raise ValueError("Invalid user")
+        print(f"Backend: Token validated for user {user.id}")
+        return Session(user_id=user.id, token=token)
+    except Exception as e:
+        print(f"Backend: Error validating token: {e}")
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
 async def get_current_user_id_from_token(
-    token: Annotated[str, Depends(oauth2_scheme)]
+    session: Annotated[Session, Depends(get_session)]
 ) -> str:
     """
-    Verify JWT and return user_id.
-    In production, decode and validate signature, claims, etc.
+    Extract and return user_id from a validated Session.
     """
-    if token == "valid_jwt_token_for_user_123":
-        return "test_user_123"
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid authentication credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    return session.user_id
 
 # --- Simulated Chat Service ---
 class ChatService:
@@ -56,6 +83,7 @@ class ChatService:
         """
         Yield chunks of a dummy model response based on conversation history.
         """
+        print(f"User ID: {user_id}")
         if not full_history:
             yield "Error: Conversation history is empty."
             return
