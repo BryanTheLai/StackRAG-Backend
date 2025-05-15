@@ -11,7 +11,6 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL") or exit("Error: SUPABASE_URL must be set")
 SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY") or exit("Error: SUPABASE_ANON_KEY must be set")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class Document(BaseModel):
     id: str
@@ -25,9 +24,9 @@ class Session(BaseModel):
 app = FastAPI(title="Backend API with Supabase Auth", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -41,6 +40,7 @@ async def get_session(token: str = Depends(oauth2_scheme)) -> Session:
             headers={"WWW-Authenticate": "Bearer"},
         )
     try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         res = supabase.auth.get_user(jwt=token)
         user = res.user
         if not user or not user.id:
@@ -58,6 +58,7 @@ async def get_session(token: str = Depends(oauth2_scheme)) -> Session:
 @app.get("/documents", response_model=List[Document], summary="Get documents for the authenticated user")
 async def list_documents(session: Session = Depends(get_session)):
     try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         supabase.auth.set_session(session.token, "")
         resp = supabase.table("documents").select("id, filename, user_id").execute()
         docs = resp.data or []
