@@ -5,7 +5,6 @@
 ## Table of Contents
 
 *   [Chapter 1: Introduction](#chapter-1-introduction)
-    *   [1.5 Key Objectives](#15-key-objectives)
 *   [Chapter 2: System Architecture](#chapter-2-system-architecture)
 *   [Chapter 3: Data Ingestion Pipeline](#chapter-3-data-ingestion-pipeline)
 *   [Chapter 4: Embedding & Storage](#chapter-4-embedding--storage)
