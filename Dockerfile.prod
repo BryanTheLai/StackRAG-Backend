@@ -1,5 +1,5 @@
 # Multi-stage production Dockerfile
-FROM python:3.12.9-slim as builder
+FROM python:3.12.9-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
 
 # Production stage
-FROM python:3.12.9-slim as production
+FROM python:3.12.9-slim AS production
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
