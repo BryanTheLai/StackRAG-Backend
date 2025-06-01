@@ -7,6 +7,7 @@ from typing import Optional, Dict, Any, IO
 from google.genai import types
 from src.llm.GeminiClient import GeminiClient
 from src.prompts.prompt_manager import PromptManager
+import re
 
 from src.models.ingestion_models import ParsingResult
 
@@ -132,7 +133,9 @@ class FinancialDocParser:
                 )
 
                 if hasattr(response, 'text') and response.text:
-                    processed_text = response.text
+                    raw = response.text
+                    m = re.search(r"```(?:markdown)?\s*(.*?)\s*```", raw, re.DOTALL)
+                    processed_text = m.group(1).strip() if m else raw.strip()
                     print(f"{page_identifier}: Annotation successful.")
                     return processed_text
 

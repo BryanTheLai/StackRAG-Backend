@@ -1,0 +1,48 @@
+services:
+  ai-cfo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile # Explicitly specifies using the development Dockerfile
+    # To use Dockerfile.prod, you might have a separate service definition
+    # or use Docker Compose override files for a production environment.
+    # Example for a production-like service (illustrative, not active by default):
+    # ai-cfo-api-prod:
+    #   build:
+    #     context: .
+    #     dockerfile: Dockerfile.prod
+    #   ports:
+    #     - "8001:8000" # Use a different host port if running alongside dev
+    #   env_file:
+    #     - .env
+    #   restart: unless-stopped
+    #   healthcheck:
+    #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    #     interval: 30s
+    #     timeout: 10s
+    #     retries: 3
+    #   networks:
+    #     - ai-cfo-network
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] # Updated to use /health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      # Mount for development (comment out for production)
+      - ./src:/app/src
+    networks:
+      - ai-cfo-network
+
+networks:
+  ai-cfo-network:
+    driver: bridge
