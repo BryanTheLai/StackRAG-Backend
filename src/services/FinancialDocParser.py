@@ -8,6 +8,7 @@ from google.genai import types
 from src.llm.GeminiClient import GeminiClient
 from src.prompts.prompt_manager import PromptManager
 import re
+from src.config.gemini_config import MULTIMODAL_MODEL
 
 from src.models.ingestion_models import ParsingResult
 
@@ -26,7 +27,7 @@ class FinancialDocParser:
         Initialize parser with a Gemini client.
         """
         self.gemini_client = gemini_client or GeminiClient()
-        self.multimodal_model = "gemini-2.0-flash-lite"
+        self.multimodal_model = MULTIMODAL_MODEL  # Use model from config
 
 
     def parse_pdf_to_markdown(self, pdf_file: IO[bytes]) -> ParsingResult:

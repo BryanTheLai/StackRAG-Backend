@@ -7,6 +7,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..dependencies import Session, get_session
+from src.llm.GeminiClient import GeminiClient
+from src.config.gemini_config import DEFAULT_CHAT_MODEL
 
 
 class FunctionCall(BaseModel):
@@ -40,26 +42,37 @@ class ChatService:
     async def generate_response_stream(
         self, user_id: str, history: List[HistoryTurn]
     ) -> AsyncGenerator[str, None]:
-        """Generate streaming chat response based on conversation history."""
+        """Generate streaming chat response based on conversation history using Gemini."""
         if not history:
             yield "Error: Conversation history is empty."
             return
 
-        # Get last message for context
-        last = history[-1]
-        summary = "the last message"
-        if last.parts and last.parts[0].text:
-            summary = f"user text '{last.parts[0].text[:30]}...'"
+        # Ensure the last message is from the user and has text content.
+        last_turn = history[-1]
+        if last_turn.role != "user" or not last_turn.parts or not last_turn.parts[0].text:
+            yield "Error: Conversation history must end with a user message with text content."
+            return
 
-        # Simulate streaming response
-        await asyncio.sleep(0.1)
-        
-        response_text = f"Model reply to {summary}: This is a streamed dummy response. "
-        for char in response_text:
-            yield char
-            await asyncio.sleep(0.02)
-        
-        yield "Stream complete."
+        try:
+            from src.helper.llm_helper_chat import serialize_conversation_history
+
+            gemini_client = GeminiClient()
+            history_payload = serialize_conversation_history(history)
+            message = json.dumps(history_payload)
+            # Use generate_content directly to get full response
+            response = gemini_client.generate_content(DEFAULT_CHAT_MODEL, [message])
+            # Extract text from response
+            text = getattr(response, 'text', None)
+            if not text and hasattr(response, 'candidates'):
+                # For API responses with candidates list
+                first_candidate = response.candidates[0]
+                text = getattr(first_candidate, 'text', getattr(first_candidate, 'content', None))
+            if text:
+                yield text
+        except ValueError as ve:
+            yield f"Error: Configuration error - {str(ve)}"
+        except Exception:
+            raise
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])

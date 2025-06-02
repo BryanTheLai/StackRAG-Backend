@@ -4,6 +4,7 @@ import os
 from typing import List, Optional, Generator, Any
 from dotenv import load_dotenv
 from src.prompts.prompt_manager import PromptManager
+from src.config.gemini_config import DEFAULT_CHAT_MODEL
 
 class GeminiClient:
     """Client for interacting with Google Gemini AI."""
@@ -25,13 +26,13 @@ class GeminiClient:
         self.client = genai.Client(api_key=self.api_key)
         self.chat = None
     
-    def create_chat(self, model: str = "gemini-2.0-flash", system_instructions: str = GEMINI_CHAT_SYSTEM_PROMPT):
+    def create_chat(self, model: str = DEFAULT_CHAT_MODEL, system_instructions: str = GEMINI_CHAT_SYSTEM_PROMPT):
         """Create a new chat session."""
         self.chat = self.client.chats.create(
             model=model,
             config=types.GenerateContentConfig(
                 system_instruction=system_instructions,
-                temperature=0.9
+                temperature=0.5
             )
         )
         return self.chat
