@@ -40,6 +40,7 @@ services:
     volumes:
       # Mount for development (comment out for production)
       - ./src:/app/src
+      - ./api:/app/api
     networks:
       - ai-cfo-network
 

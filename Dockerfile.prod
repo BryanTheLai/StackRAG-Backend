@@ -31,6 +31,7 @@ RUN useradd --create-home --shell /bin/bash app
 # Set working directory and change ownership
 WORKDIR /app
 COPY src/ ./src/
+COPY api/ ./api/
 RUN chown -R app:app /app
 
 # Switch to non-root user
