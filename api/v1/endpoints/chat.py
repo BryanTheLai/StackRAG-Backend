@@ -1,6 +1,5 @@
-import asyncio
+from typing import Any, Generator, Dict, List
 import json
-from typing import Any, AsyncGenerator, Dict, List
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -39,9 +38,9 @@ class ChatPayload(BaseModel):
 
 
 class ChatService:
-    async def generate_response_stream(
+    def generate_response_stream(
         self, user_id: str, history: List[HistoryTurn]
-    ) -> AsyncGenerator[str, None]:
+    ) -> Generator[str, None, None]:
         """Generate streaming chat response based on conversation history using Gemini."""
         if not history:
             yield "Error: Conversation history is empty."
@@ -59,16 +58,15 @@ class ChatService:
             gemini_client = GeminiClient()
             history_payload = serialize_conversation_history(history)
             message = json.dumps(history_payload)
-            # Use generate_content directly to get full response
-            response = gemini_client.generate_content(DEFAULT_CHAT_MODEL, [message])
-            # Extract text from response
-            text = getattr(response, 'text', None)
-            if not text and hasattr(response, 'candidates'):
-                # For API responses with candidates list
-                first_candidate = response.candidates[0]
-                text = getattr(first_candidate, 'text', getattr(first_candidate, 'content', None))
-            if text:
-                yield text
+            # Stream content generation directly
+            for chunk in gemini_client.generate_content_stream(DEFAULT_CHAT_MODEL, [message]):
+                # Extract text from stream chunk
+                text = getattr(chunk, 'text', None)
+                if not text and hasattr(chunk, 'candidates'):
+                    first_cand = chunk.candidates[0]
+                    text = getattr(first_cand, 'text', getattr(first_cand, 'content', None))
+                if text:
+                    yield text
         except ValueError as ve:
             yield f"Error: Configuration error - {str(ve)}"
         except Exception:
@@ -80,14 +78,14 @@ chat_service = ChatService()
 
 
 @router.post("/stream")
-async def stream_chat_response(
+def stream_chat_response(
     payload: ChatPayload,
     session: Session = Depends(get_session)
 ):
     """Stream a chat response using server-sent events."""
-    async def event_generator() -> AsyncGenerator[str, None]:
+    def event_generator() -> Generator[str, None, None]:
         try:
-            async for chunk in chat_service.generate_response_stream(
+            for chunk in chat_service.generate_response_stream(
                 session.user_id, payload.history
             ):
                 data = json.dumps({"text_chunk": chunk})

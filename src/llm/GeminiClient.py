@@ -78,3 +78,16 @@ class GeminiClient:
                     self.text = error_text
             
             return ErrorResponse(error_message)
+    
+    def generate_content_stream(self, model: str, contents: List, config: Optional[types.GenerateContentConfig] = None) -> Generator:
+        """Stream content generation directly (non-chat)."""
+        try:
+            return self.client.models.generate_content_stream(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            def error_generator():
+                yield types.GenerateContentResponse(text=f"Error: {str(e)}")
+            return error_generator()
