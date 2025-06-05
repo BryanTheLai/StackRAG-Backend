@@ -39,7 +39,8 @@ class RetrievalService:
     def __init__(
         self,
         openai_client: OpenAIClient,
-        supabase_service: SupabaseService
+        supabase_service: SupabaseService,
+        user_id: str, # This user_id is injected by the calling pipeline
     ):
         """
         Initializes the RetrievalService with necessary clients.
@@ -55,6 +56,7 @@ class RetrievalService:
              
         self._openai_client = openai_client
         self._supabase_service = supabase_service
+        self._user_id = user_id
 
     @staticmethod
     def get_tool_declaration() -> Dict:
@@ -66,7 +68,6 @@ class RetrievalService:
     def retrieve_chunks(
         self,
         query_text: str,
-        user_id: str, # This user_id is injected by the calling pipeline
         match_count: int = 5,
         doc_specific_type: str = None,
         company_name: str = None,
@@ -94,7 +95,7 @@ class RetrievalService:
         """
         print(f"\n--- Executing RetrievalService.retrieve_chunks ---")
         print(f"  Query: '{query_text}'")
-        print(f"  User ID for retrieval: {user_id}")
+        print(f"  User ID for retrieval: {self._user_id}")
         print(f"  Filters: Type={doc_specific_type}, Company={company_name}, Year={doc_year_start}-{doc_year_end}, Qtr={doc_quarter}")
 
         try:
@@ -114,7 +115,7 @@ class RetrievalService:
                 {
                     'query_embedding': query_embedding,
                     'match_count': match_count,
-                    'user_id': user_id, # Pass the authenticated user_id to the RPC
+                    'user_id': self._user_id, # Pass the authenticated user_id to the RPC
                     'p_doc_specific_type': doc_specific_type,
                     'p_company_name': company_name,
                     'p_doc_year_start': doc_year_start,

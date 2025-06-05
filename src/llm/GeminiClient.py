@@ -12,12 +12,17 @@ class GeminiClient:
     GEMINI_CHAT_SYSTEM_PROMPT = PromptManager.get_prompt(
         "chat_system_prompt"
     )
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(
+        self, 
+        api_key: Optional[str] = None, 
+        model: str = DEFAULT_CHAT_MODEL, 
+        system_instructions: str = GEMINI_CHAT_SYSTEM_PROMPT,
+        config: Optional[types.GenerateContentConfig] = None):
         """Initialize client with API key."""
         load_dotenv()
         
         # Load API key from environment or argument.
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+        self.api_key = api_key or str(os.environ.get("GEMINI_API_KEY"))
         
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY not found in environment variables.")
@@ -25,13 +30,16 @@ class GeminiClient:
         print(f"Initializing Gemini client with API key: {self.api_key[:3]}...{self.api_key[-2:]}")
         self.client = genai.Client(api_key=self.api_key)
         self.chat = None
+        self.config = config
+        self.model = model
+        self.system_instructions: str = system_instructions
     
-    def create_chat(self, model: str = DEFAULT_CHAT_MODEL, system_instructions: str = GEMINI_CHAT_SYSTEM_PROMPT):
+    def create_chat(self):
         """Create a new chat session."""
         self.chat = self.client.chats.create(
-            model=model,
+            model=self.model,
             config=types.GenerateContentConfig(
-                system_instruction=system_instructions,
+                system_instruction=self.system_instructions,
                 temperature=0.5
             )
         )
@@ -49,7 +57,7 @@ class GeminiClient:
                 yield types.GenerateContentResponse(text=f"Error: {str(e)}")
             return error_generator()
     
-    def generate_content(self, model: str, contents: List) -> Any:
+    def generate_content(self, contents: List) -> Any:
         """Generate content directly (non-chat).
         
         Use for image processing, structured outputs, etc.
@@ -64,8 +72,9 @@ class GeminiClient:
         try:
             # Direct model call without chat history.
             response = self.client.models.generate_content(
-                model=model,
-                contents=contents
+                model=self.model,
+                contents=contents,
+                config=self.config
             )
             return response
         except Exception as e:
@@ -79,13 +88,13 @@ class GeminiClient:
             
             return ErrorResponse(error_message)
     
-    def generate_content_stream(self, model: str, contents: List, config: Optional[types.GenerateContentConfig] = None) -> Generator:
+    def generate_content_stream(self, contents: List, ) -> Generator:
         """Stream content generation directly (non-chat)."""
         try:
             return self.client.models.generate_content_stream(
-                model=model,
+                model=self.model,
                 contents=contents,
-                config=config
+                config=self.config
             )
         except Exception as e:
             def error_generator():
