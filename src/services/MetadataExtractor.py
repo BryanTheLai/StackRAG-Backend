@@ -3,6 +3,7 @@ from google.genai import types
 from src.llm.GeminiClient import GeminiClient
 from src.prompts.prompt_manager import PromptManager
 from src.models.metadata_models import FinancialDocumentMetadata
+from src.config.gemini_config import TEXT_MODEL
 
 
 class MetadataExtractor:
@@ -15,7 +16,7 @@ class MetadataExtractor:
         Initialize extractor with a Gemini client.
         """
         self.gemini_client = gemini_client or GeminiClient()
-        self.text_model = "gemini-2.0-flash-lite" # Model supporting JSON schema
+        self.text_model = TEXT_MODEL  # Use text model from config
 
     def extract_metadata(self, markdown_text_snippet: str, truncate_length: int = 16000) -> FinancialDocumentMetadata:
         """

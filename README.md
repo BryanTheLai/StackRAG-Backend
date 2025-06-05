@@ -2,6 +2,18 @@
 
 **Version:** 1.4 (Revised for Clarity)
 
+1. Problem: Are you solving a sufficiently painful, must-have problem?
+    - No
+
+2. Persona: Are you targeting the right users who feel this pain most acutely?
+    - I dont even know who my users are
+
+3. Promise: Is your value proposition clear and compelling to this persona?
+    - No
+
+4. Product: Is your solution effectively delivering on the promise for the problem and persona?
+    - No
+
 ## Table of Contents
 
 *   [Chapter 1: Introduction](#chapter-1-introduction)

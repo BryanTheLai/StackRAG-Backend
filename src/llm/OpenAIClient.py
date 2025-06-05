@@ -2,6 +2,8 @@ import os
 from typing import List
 from dotenv import load_dotenv
 from openai import OpenAI
+from src.config.openai_config import EMBEDDING_MODEL
+
 
 class OpenAIClient:
     """Handles interactions with OpenAI API, primarily for embeddings."""
@@ -22,7 +24,7 @@ class OpenAIClient:
         )
 
         # Define the default embedding model
-        self.embedding_model = "text-embedding-3-small" # Or "nomic-ai/nomic-embed-text-v1.5" if using Fireworks base_url
+        self.embedding_model = EMBEDDING_MODEL # Or "nomic-ai/nomic-embed-text-v1.5" if using Fireworks base_url
 
         print(f"Initialized OpenAI client with model: {self.embedding_model}")
 
