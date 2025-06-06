@@ -1,7 +1,7 @@
 # src/services/FinancialDocParser.py
 
 import time
-import pymupdf as fitz
+import pymupdf
 import concurrent.futures
 from typing import Optional, Dict, Any, IO
 from google.genai import types
@@ -42,7 +42,9 @@ class FinancialDocParser:
         """
         pdf_document = None
         try:
-            pdf_document = fitz.open(stream=pdf_file, filetype="pdf")
+            # Read PDF buffer into bytes to support SpooledTemporaryFile streams
+            pdf_bytes = pdf_file.read()
+            pdf_document = pymupdf.open(stream=pdf_bytes, filetype="pdf")
             total_pages = len(pdf_document)
             print(f"PDF has {total_pages} pages")
 
@@ -55,7 +57,7 @@ class FinancialDocParser:
             for page_num in range(total_pages):
                 print(f"Rendering page {page_num+1}/{total_pages}")
                 page = pdf_document[page_num]
-                pix = page.get_pixmap(matrix=fitz.Matrix(3, 3))
+                pix = page.get_pixmap(matrix=pymupdf.Matrix(3, 3))
                 img_bytes = pix.tobytes("png")
                 pages_data.append({"page_num": page_num, "img_bytes": img_bytes})
 
@@ -92,7 +94,7 @@ class FinancialDocParser:
 
             return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
-        except fitz.fitz.FileDataError:
+        except pymupdf.pymupdf.FileDataError:
              error_msg = "Error: Could not open PDF file from buffer. File may be corrupt or not a PDF."
              print(error_msg)
              return {"markdown_content": None, "page_count": 0, "error": error_msg}
