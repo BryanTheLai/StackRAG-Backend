@@ -2,6 +2,8 @@ import os
 from pydantic_ai import Agent
 from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
+from pydantic_core import to_jsonable_python
+from pydantic_ai.messages import ModelMessagesTypeAdapter  
 from supabase import create_client  # removed SyncClient import
 from api.v1.dependencies import SUPABASE_KEY, SUPABASE_URL, Session
 from src.llm.tools.FunctionCaller import RetrievalService
@@ -11,12 +13,26 @@ from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 
 SYSTEM_PROMPT = """
-You are a RAG-enabled AI assistant. You have access to two tools:
- - RetrievalService: retrieve relevant document chunks based on a query.
- - PythonCalculationTool: perform Python calculations.
-Use tools as needed and respond with a final answer. Do not invent facts.
-"""
+You are a financial document analysis AI assistant with access to the user's uploaded financial documents.
+Your primary goal is to help users understand and analyze financial information from their documents.
 
+IMPORTANT INSTRUCTIONS:
+1. ALWAYS use the retrieve_financial_chunks tool to search for information before answering questions about financial data
+2. Be specific and accurate - only provide information that you can find in the retrieved documents
+3. If you cannot find relevant information in the documents, clearly state this
+4. Use the Python calculator tool for any mathematical calculations or financial metric computations
+5. Provide clear, well-structured responses with specific references to the documents when possible
+
+When users ask about:
+- Financial metrics, ratios, or performance indicators
+- Company financial data or trends
+- Specific information from financial statements
+- Comparisons between time periods or companies
+- Any other financial document content
+
+You should FIRST search for relevant information using the retrieve_financial_chunks tool,
+then provide a comprehensive answer based on the retrieved content.
+"""
 async def run_react_rag(
     session: Session,
     supabase_client: Any,
@@ -48,10 +64,14 @@ async def run_react_rag(
         system_prompt=SYSTEM_PROMPT,
         streaming=True,
     )
+    # ensure message_history is JSON serializable
+    history_for_model = to_jsonable_python(message_history) if message_history else []
+    same_history_as_step_1 = ModelMessagesTypeAdapter.validate_python(history_for_model)
+    print(same_history_as_step_1)
 
     # stream and yield results incrementally with debug
     try:
-        async with agent.run_stream(user_input) as result:  
+        async with agent.run_stream(user_input, message_history=same_history_as_step_1) as result:  
             async for message in result.stream_text(delta=True):                  
                 print(f"[DEBUG] message received: {message}")
                 yield message
