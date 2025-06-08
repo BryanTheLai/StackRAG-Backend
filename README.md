@@ -16,19 +16,16 @@
 
 ## Table of Contents
 
-*   [Chapter 1: Introduction](#chapter-1-introduction)
-*   [Chapter 2: System Architecture](#chapter-2-system-architecture)
-*   [Chapter 3: Data Ingestion Pipeline](#chapter-3-data-ingestion-pipeline)
-*   [Chapter 4: Embedding & Storage](#chapter-4-embedding--storage)
-*   [Chapter 5: Retrieval Process](#chapter-5-retrieval-process)
-*   [Chapter 6: Answer Generation & Tools](#chapter-6-answer-generation--tools)
-*   [Chapter 7: Final Output & Sources](#chapter-7-final-output--sources)
-*   [Chapter 8: Evaluation](#chapter-8-evaluation)
-*   [Chapter 10: Monitoring & Logs (Future Work)](#chapter-10-monitoring--logs-future-work)
-*   [Chapter 11: Running the System](#chapter-11-running-the-system)
-*   [Chapter 12: Next Steps](#chapter-12-next-steps)
-*   [Chapter 13: Strategic Considerations and Future Vision](#chapter-13-strategic-considerations-and-future-vision)
-*   [Appendix](#appendix)
+1. [Chapter 1: Introduction](#chapter-1-introduction)
+2. [Chapter 2: Data Ingestion Pipeline](#chapter-2-data-ingestion-pipeline)
+3. [Chapter 3: Retrieval Process](#chapter-3-retrieval-process)
+4. [Chapter 4: Answer Generation & Tools](#chapter-4-answer-generation--tools)
+5. [Chapter 5: Final Output & Sources](#chapter-5-final-output--sources)
+6. [Chapter 6: Evaluation](#chapter-6-evaluation)
+7. [Chapter 7: Monitoring & Logs (Future Work)](#chapter-7-monitoring--logs-future-work)
+8. [Chapter 8: Next Steps](#chapter-8-next-steps)
+9. [Chapter 9: Strategic Considerations and Future Vision](#chapter-9-strategic-considerations-and-future-vision)
+10. [Appendix](#appendix)
 
 ---
 
@@ -38,7 +35,6 @@
   **Accurate Calculations:** Performed by reliable Python tools, not the LLM.
 
 **Key Objectives:**
-*   Integrate reliable calculation tools.
 *   Establish an automated evaluation framework.
 *   Build a functional Proof-of-Concept.
 *   Design for flexibility amidst rapid AI advancements.
@@ -48,14 +44,14 @@
 
 ---
 
-## Chapter 3: Data Ingestion Pipeline
+## Chapter 2: Data Ingestion Pipeline
 
 **Financial Document "AST" Analogy:**
 Similar to how Abstract Syntax Trees (ASTs) capture code structure, these initial stages create a structural representation of the financial document. This allows the system to understand hierarchy and components beyond raw text, crucial for accurate filtering and contextual understanding by the LLM.
 
 ---
 
-## Chapter 5: Retrieval Process
+## Chapter 3: Retrieval Process
 
 **Handling Complex Queries (Future):** An LLM may decompose complex questions into sub-queries, making multiple calls to retrieval or other tools.
 
@@ -63,7 +59,7 @@ Similar to how Abstract Syntax Trees (ASTs) capture code structure, these initia
 
 ---
 
-# Chapter 6: Answer Generation & Tools
+## Chapter 4: Answer Generation & Tools
 
 **Guiding the AI (Prompting - Implemented):**
 Prompts are critical for reliability. Key principles embedded in system prompts include:
@@ -73,7 +69,7 @@ Prompts are critical for reliability. Key principles embedded in system prompts 
 
 ---
 
-# Chapter 7: Final Output & Sources
+## Chapter 5: Final Output & Sources
 
 The AI's raw answer undergoes final processing.
 
@@ -81,7 +77,7 @@ The AI's raw answer undergoes final processing.
 
 ---
 
-# Chapter 8: Evaluation
+## Chapter 6: Evaluation
 
 **Why Evaluate?**
 To prove reliability, not just assume it. Evaluation measures performance, identifies issues, validates improvements, and demonstrates system trustworthiness.
@@ -141,17 +137,17 @@ An automated script runs test cases and calculates metrics, enabling rapid feedb
 
 ---
 
-## Chapter 10: Monitoring & Logs (Future Work)
+## Chapter 7: Monitoring & Logs (Future Work)
 
 Comprehensive system monitoring and detailed logging (e.g., to Supabase) will be implemented to track performance, diagnose issues, and understand usage patterns in a production environment. This includes logging key events, errors, AI interactions, and resource utilization.
 
 ---
 
-## Chapter 12: Next Steps
+## Chapter 8: Next Steps
 
-### 12.1 Immediate Next Steps
+### 8.1 Immediate Next Steps
 
-### 12.2 Future Enhancements
+### 8.2 Future Enhancements
 
 *   **Integrations with External Data Sources:** QuickBooks, Gmail (for financial document processing), cloud storage (Google Drive, Dropbox) with strict access controls.
 *   **Templated Reporting & Real-Time Dashboards:** Generate standardized reports and dynamic dashboards from extracted/calculated data and integrated sources.
@@ -167,23 +163,23 @@ Comprehensive system monitoring and detailed logging (e.g., to Supabase) will be
 
 ---
 
-## Chapter 13: Strategic Considerations and Future Vision
+## Chapter 9: Strategic Considerations and Future Vision
 
-### 13.2 The "Bitter Lesson": Vertical vs. Horizontal AI Applications
+### 9.1 The "Bitter Lesson": Vertical vs. Horizontal AI Applications
 
 The "Bitter Lesson" suggests general AI methods eventually outperform specialized ones. This means "vertical workflows" like this assistant (specialized, engineered for current models) could be vulnerable to powerful, general "horizontal agents" from large labs as AI improves. Reliance solely on the AI processing pipeline is a long-term risk.
 
-### 13.3 Implications of Opaque AI Reasoning
+### 9.2 Implications of Opaque AI Reasoning
 
 As AI reasoning becomes less interpretable ("latent space"), auditing AI decisions becomes harder. This reinforces the design choices of:
 *   **Deterministic Calculation Tools:** Ensuring numerical results are transparent and auditable.
 *   **Grounded Answers with Citations:** Providing verifiable links to human-readable source documents, crucial for trust.
 
-### 13.4 Impact of Future Models
+### 9.3 Impact of Future Models
 
 Highly capable future models ("GPT-5 level") might reduce the need for current data preparation steps like chunking, embedding, and complex RAG. The system's value would shift from data prep to orchestrating these powerful models securely, reliably, and verifiably. Core components like Supabase, API, calculation tools, and citation logic would remain vital.
 
-### 13.5 Defending Against General Agents
+### 9.4 Defending Against General Agents
 
 To defend against general AI agents, the Project must focus on:
 1.  **Trust and Security Moat:** A secure, multi-tenant platform for sensitive financial data with guaranteed isolation and auditability.
