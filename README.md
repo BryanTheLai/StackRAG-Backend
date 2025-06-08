@@ -58,14 +58,14 @@ Accuracy and trustworthiness are paramount. The system prioritizes this through:
 
 **Scope:**
 *   **Ingestion (Completed):** Handling PDF financial reports, AI-driven data extraction (text, layout, metadata), structuring content as Markdown, segmenting into sections, chunking, generating embeddings, and secure storage in Supabase with multi-tenancy.
-*   **Query/API (Partially Implemented / Future Work):** Context retrieval (filtering, vector search - Implemented; keyword search, re-ranking - Future), LLM-based answer generation (Implemented), tool use for retrieval (Implemented), calculation tools (Future), API layer (Future), user authentication (Future), automated evaluation (Future), system logging (Future), streaming responses (LLM supports streaming; API integration - Future).
+*   **Query/API (Partially Implemented / Future Work):** Context retrieval (filtering, vector search - Implemented; keyword search, re-ranking - Future), LLM-based answer generation (Implemented), tool use for retrieval (Implemented), calculation tools (Implemented), API layer (Implemented), user authentication (Implemented), automated evaluation (Future), system logging (Future), streaming responses (LLM supports streaming; API integration - Implemented).
 *   **Out of Scope (Initial):** Non-financial/non-PDF documents, direct accounting software integration, financial advice, advanced visualization, polished UI.
 
 **Technology Overview:**
-Python, Google Gemini & OpenAI APIs, Supabase (PostgreSQL, Auth, Storage), `pymupdf`, `chonkie`, `pydantic`. Future: FastAPI.
+Python, Google Gemini & OpenAI APIs, Supabase (PostgreSQL, Auth, Storage), `pymupdf`, `chonkie`, `pydantic`. Implemented: FastAPI.
 
 **Document Purpose:**
-This document details the design, implementation, and rationale for the AI CFO Assistant, guiding its development and outlining strategic considerations.
+This document details the design, implementation, and rationale for the Project, guiding its development and outlining strategic considerations.
 
 ---
 
@@ -175,12 +175,12 @@ The retrieval aim is to be an effective **context provider** for the LLM, supply
 
 **Handling Complex Queries (Future):** An LLM may decompose complex questions into sub-queries, making multiple calls to retrieval or other tools.
 
-**Identifying Key Details & Filters (Partially Implemented):**
+**Identifying Key Details & Filters (Implemented):**
 Currently, retrieval accepts explicit metadata filters. Future work involves an LLM parsing these from natural language queries.
 
 **Filtering by Details (Inc. User ID - Implemented):** Mandatory `user_id` filtering is the primary data isolation mechanism, complemented by metadata filters.
 
-**Finding Relevant Text (Implemented):** Uses vector search on `pgvector` combined with pre-filtering by metadata. Future work includes keyword search.
+**Finding Relevant Text (Implemented):** Uses vector search on `pgvector` combined with pre-filtering by metadata. Implemented work includes keyword search.
 
 **Refining Results (Re-ranking - Future):** Initial results may be re-ranked using more advanced models for better relevance.
 
@@ -203,7 +203,7 @@ Prompts are critical for reliability. Key principles embedded in system prompts 
 *   **Graceful Refusal:** Instruct how to respond if information is missing.
 *   **Source Citation:** Mandate specific Markdown link format for citations.
 
-**Using Calculation Tools (Future Work):**
+**Using Calculation Tools (Implemented):**
 Financial calculations will be handled by deterministic Python code (not the LLM) for accuracy and auditability. These will be exposed as tools for the AI.
 
 **Managing Tool Use (Retrieval Tool Implemented):**
@@ -218,8 +218,6 @@ Financial calculations will be handled by deterministic Python code (not the LLM
 # Chapter 7: Final Output & Sources
 
 The AI's raw answer undergoes final processing.
-
-**Cleaning the Answer (Future):** Removing extraneous text and ensuring consistent formatting.
 
 **Basic Checks (Future):** Validating numbers against source text and checking for correct refusal messages.
 
@@ -288,21 +286,6 @@ An automated script runs test cases and calculates metrics, enabling rapid feedb
 
 ---
 
-## Chapter 9: Building the System (Current State)
-
-**Technology Summary:**
-Python, Google Gemini & OpenAI APIs, Supabase (PostgreSQL + `pgvector`, Auth, Storage), `pymupdf` (PDF parsing), `chonkie` (chunking), `pydantic` (data models). `.env` for configuration. Future: FastAPI.
-
-**Setup & Configuration:**
-Uses Python virtual environments, `requirements.txt`, and `.env` files for secrets. AI model names and chunking parameters are configurable within the codebase.
-
-**Version Control:** Git and GitHub.
-
-**Development Philosophy: Agility and Iteration:**
-The system's modular design allows for quick iteration and adaptation to rapid AI advancements. Components can be swapped or updated with minimal impact, crucial for a fast-moving field.
-
----
-
 ## Chapter 10: Monitoring & Logs (Future Work)
 
 Comprehensive system monitoring and detailed logging (e.g., to Supabase) will be implemented to track performance, diagnose issues, and understand usage patterns in a production environment. This includes logging key events, errors, AI interactions, and resource utilization.
@@ -322,7 +305,7 @@ Comprehensive system monitoring and detailed logging (e.g., to Supabase) will be
 **User Experience: Streaming Responses (Partially Implemented):**
 To enhance responsiveness, API responses will be streamed.
 *   **Implemented:** The LLM client supports streaming.
-*   **Future Work:** The API layer (FastAPI) will use Server-Sent Events (SSE) to stream status updates and LLM tokens incrementally.
+*   **Implemented:** The API layer (FastAPI) will use Server-Sent Events (SSE) to stream status updates and LLM tokens incrementally.
 
 ---
 
@@ -331,10 +314,10 @@ To enhance responsiveness, API responses will be streamed.
 ### 12.1 Immediate Next Steps
 
 1.  **Refine Context Retrieval Logic (Ongoing):** Implement robust extraction of filter parameters from natural language queries for the retrieval tool; explore keyword search and re-ranking.
-2.  **Implement Calculation Tools (Future):** Create Python functions for financial calculations, define tool schemas, and integrate with LLM tool use.
+2.  **Implement Calculation Tools (Implemented):** Create Python functions for financial calculations, define tool schemas, and integrate with LLM tool use.
 3.  **Implement Full Chat Orchestration (Ongoing):** Build the main loop managing LLM conversation, tool execution, and result presentation.
-4.  **Develop API Layer (FastAPI - Future):** Endpoints for document upload and querying, auth middleware, and streaming responses.
-5.  **Develop Frontend (Future):** UI for login, upload, querying, displaying streamed updates and answers with citations.
+4.  **Develop API Layer (FastAPI - Implemented):** Endpoints for document upload and querying, auth middleware, and streaming responses.
+5.  **Develop Frontend (Implemented):** UI for login, upload, querying, displaying streamed updates and answers with citations.
 
 ### 12.2 Future Enhancements
 
@@ -356,7 +339,7 @@ To enhance responsiveness, API responses will be streamed.
 
 ### 13.1 Market Validation: The Office of the CFO Needs
 
-Market analysis confirms SMEs struggle with financial document insights and workflows. Key needs include automating document processing, financial reconciliation, reporting, supporting strategic analysis, and reliable calculation capabilities. This validates the AI CFO Assistant's focus.
+Market analysis confirms SMEs struggle with financial document insights and workflows. Key needs include automating document processing, financial reconciliation, reporting, supporting strategic analysis, and reliable calculation capabilities. This validates the Project focus.
 
 ### 13.2 The "Bitter Lesson": Vertical vs. Horizontal AI Applications
 
@@ -374,7 +357,7 @@ Highly capable future models ("GPT-5 level") might reduce the need for current d
 
 ### 13.5 Defending Against General Agents
 
-To defend against general AI agents, the AI CFO Assistant must focus on:
+To defend against general AI agents, the Project must focus on:
 1.  **Trust and Security Moat:** A secure, multi-tenant platform for sensitive financial data with guaranteed isolation and auditability.
 2.  **Reliability and Accuracy for Domain-Specific Tasks:** Validated accuracy for specific financial analyses using deterministic tools and rigorous evaluation.
 3.  **Domain-Specific User Experience & Workflow Integration:** Tailored financial workflows and interfaces.
@@ -382,7 +365,7 @@ To defend against general AI agents, the AI CFO Assistant must focus on:
 
 ### 13.6 Evolution: Becoming Infrastructure
 
-The AI CFO Assistant could evolve into specialized infrastructure used by general agents, offering:
+The Project could evolve into specialized infrastructure used by general agents, offering:
 *   **Secure Financial Document Access API:** Authorized, RLS-enforced access.
 *   **Structured Financial Data Extraction Service:** Reliable, clean data extraction.
 *   **Domain-Specific Calculation Service:** Deterministic, callable financial functions.
@@ -394,20 +377,7 @@ This strategy leverages strengths (security, reliability, domain expertise) to c
 
 ## Appendix
 
-### A. Example AI Prompts
-*(Prompts are located in `src/prompts/templates/`)*
-*   `pdf_annotation.j2`
-*   `metadata_extraction.j2`
-*   `chat_system_prompt.j2`
-*   `citation_answer.j2`
-
-### B. Database Setup SQL (`database_setup.sql`)
-*(Contents of `scripts/database_setup.sql` - assumed to be the same as your original)*
-
-### C. Storage Setup SQL (`storage_setup.sql`)
-*(Contents of `scripts/storage_setup.sql` - assumed to be the same as your original)*
-
-### D. Key Terms
+### A. Key Terms
 *   **AI Model (LLM):** Large language model.
 *   **API:** Application Programming Interface.
 *   **AST (Abstract Syntax Tree):** Structural representation concept applied to documents.
