@@ -36,7 +36,7 @@ class FinancialDocumentMetadata(BaseModel):
     total_expenses_calculation: str = Field(None, description="Calculation proof and reasoning for total_expenses")
     total_expenses: Optional[float] = Field(None, description="The total expenses for the period, if applicable.")
 
-    total_net_income: str = Field(None, description="Calculation proof and reasoning for net_income")
+    net_income_calculation: str = Field(None, description="Calculation proof and reasoning for net_income")
     net_income: Optional[float] = Field(None, description="The final net income (profit/loss) for the period, if applicable.")
 
     currency: Optional[str] = Field(None, description="The 3-letter ISO currency code of the metrics, if applicable.")

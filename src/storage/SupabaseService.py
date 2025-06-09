@@ -83,7 +83,7 @@ class SupabaseService:
                 "doc_type": doc_type,
                 "doc_specific_type": metadata.doc_specific_type.value if metadata.doc_specific_type else None,
                 "company_name": metadata.company_name if metadata.company_name else None,
-                "report_date": metadata.report_date if metadata.report_date != "1900-01-01" else None,
+                "report_date": metadata.report_date, # Simplified: Pydantic model ensures it's str or None
                 "doc_year": metadata.doc_year if metadata.doc_year != -1 else None,
                 "doc_quarter": metadata.doc_quarter if metadata.doc_quarter != -1 else None,
                 "doc_summary": metadata.doc_summary,
