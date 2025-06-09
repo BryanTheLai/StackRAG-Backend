@@ -12,6 +12,7 @@ from src.services.MetadataExtractor import MetadataExtractor
 from src.models.ingestion_models import ParsingResult, SectionData, ChunkData
 
 from src.models.metadata_models import FinancialDocumentMetadata
+from src.enums import FinancialDocSpecificType # ADDED IMPORT
 
 from src.services.Sectioner import Sectioner
 from src.services.ChunkingService import ChunkingService
@@ -93,7 +94,7 @@ class IngestionPipeline:
 
             # --- Step 2: Extract Document Metadata ---
             print("\nStep 2: Extracting Document Metadata...")
-            markdown_snippet = combined_markdown[:16000]
+            markdown_snippet = combined_markdown
             metadata_result: FinancialDocumentMetadata = self.metadata_extractor.extract_metadata(markdown_snippet)
 
             if not metadata_result:
@@ -138,6 +139,20 @@ class IngestionPipeline:
                  return {"success": False, "message": error_msg}
             print(f"Document record saved successfully. Document ID: {document_id}")
 
+            # --- ADDED: Step 4.5: Save Income Statement Summary (if applicable) ---
+            if document_metadata.doc_specific_type == FinancialDocSpecificType.INCOME_STATEMENT:
+                print(f"\\nAttempting to save Income Statement Summary for document: {document_id} (Type: {document_metadata.doc_specific_type.value})...")
+                summary_id = self.supabase_service.save_income_statement_summary(
+                    document_id=document_id,
+                    user_id=user_id,
+                    metadata=document_metadata
+                )
+                if summary_id:
+                    print(f"Income Statement Summary saved successfully. Summary ID: {summary_id}")
+                else:
+                    # Detailed error is logged within save_income_statement_summary method
+                    print(f"Warning: Failed to save Income Statement Summary for document: {document_id}. Pipeline will continue.")
+            # --- End ADDED Step ---
 
             # --- Step 5: Section Markdown ---
             print("\nStep 5: Sectioning Markdown Content...")

@@ -14,17 +14,31 @@ Extract the following fields based *only* on the content of the text snippet:
 - doc_quarter: The primary fiscal quarter (1-4 integer). If not a quarterly report or quarter is not found, use -1.
 - doc_summary: A brief, 1-2 sentence summary.
 
-If the `doc_specific_type` is identified as "Income Statement", you MUST also extract the following fields and nest them under an `income_statement_summary` object:
-  - total_revenue: The total revenue for the period (float).
-  - net_income: The net income (profit/loss) for the period (float).
-  - total_expenses: Calculate as total_revenue - net_income (float).
-  - currency: The 3-letter ISO currency code of the metrics (e.g., "USD").
-  - period_start_date: The start date of the reporting period for the income statement (YYYY-MM-DD).
-  - period_end_date: The end date of the reporting period for the income statement (YYYY-MM-DD).
+IMPORTANT: For financial figures like total_revenue and net_income, if the text indicates a scale (e.g., "in millions", "in thousands", "M", "K"), you MUST convert the reported number to its full, absolute numerical value (e.g., if "Revenue is 500 M", extract 500000000).
 
-If the document is NOT an "Income Statement", the `income_statement_summary` field should be `null` or omitted.
+The following fields are part of the main JSON object and are optional.
+Their values should be `null` if the information is not present or not applicable.
+Do NOT nest these fields under a separate "income_statement_summary" object.
+- total_revenue: The total revenue for the period (float), converted to its full absolute numerical value if a scale (e.g., "in millions") is indicated.
+- net_income: The net income (profit/loss) for the period (float), converted to its full absolute numerical value if a scale is indicated.
+- total_expenses: Calculated as total_revenue - net_income (float), using the full absolute numerical values. If "total_revenue" and "net_income" are present (and have been scaled), you SHOULD calculate this value even if the term "total_expenses" is not explicitly found in the text. If either `total_revenue` or `net_income` is `null` after attempting extraction and scaling, then `total_expenses` should also be `null`. Be careful to distinguish between revenue and expense figures; do not assume "total revenue" is "total_expenses".
+- currency: The 3-letter ISO currency code of the metrics (e.g., "USD"), if applicable.
+- period_start_date: The start date of the reporting period (YYYY-MM-DD), if applicable. Should be `null` if not found.
+- period_end_date: The end date of the reporting period (YYYY-MM-DD), if applicable. Should be `null` if not found.
 
-If a specific piece of information (like company name, date, year, quarter) is genuinely not found in the text snippet, use an empty string "" for text fields, -1 for integer fields like year/quarter, and "1900-01-01" or a similar clear placeholder for the date if you cannot find it, according to the schema. For the `income_statement_summary` fields, if they are applicable but a value cannot be found, use appropriate defaults (e.g., 0.0 for floats, "USD" for currency if not specified, or "1900-01-01" for dates if not found).
+If the `doc_specific_type` is identified as "Income Statement", you MUST attempt to extract values for ALL of the following fields and include them in the JSON response:
+`total_revenue`, `net_income`, `total_expenses`, `currency`, `period_start_date`, `period_end_date`.
+- For `total_expenses`, if not explicitly stated, calculate it using the full scaled values of `total_revenue` and `net_income` if they are available.
+- If `total_revenue`, `net_income` (after attempting to find and scale them), or other financial figures for an income statement are genuinely not found or cannot be reliably extracted, their corresponding fields should be `null`.
+- Similarly, if `currency`, `period_start_date`, or `period_end_date` are not found, their fields should be `null`.
+Ensure these fields are always present in the JSON output for "Income Statement" types, even if their value is `null`.
+
+If `doc_specific_type` is NOT "Income Statement", or if the specific information for these financial fields cannot be found,
+these fields should be `null` (or omitted, which will result in `null` as per the schema).
+
+If a specific piece of information (like company name, date, year, quarter) is genuinely not found in the text snippet, 
+use an empty string "" for text fields, -1 for integer fields like year/quarter, and null or a 
+similar clear placeholder for the date if you cannot find it, according to the schema. 
 
 Provide the response strictly as a JSON object conforming to the requested schema. Do not include any other text or commentary.
 

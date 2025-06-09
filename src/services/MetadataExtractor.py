@@ -22,7 +22,7 @@ class MetadataExtractor:
         """
         Sends text snippet to LLM to extract structured metadata.
         """
-        truncated = markdown_text_snippet[:truncate_length]
+        truncated = markdown_text_snippet#[:truncate_length]
 
         formatted_prompt = PromptManager.get_prompt(
             "metadata_extraction",

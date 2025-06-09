@@ -30,9 +30,15 @@ class FinancialDocumentMetadata(BaseModel):
     )
 
     # --- Fields from former IncomeStatementSummary, now optional and part of FinancialDocumentMetadata ---
+    total_revenue_calculation: str = Field(None, description="Calculation proof and reasoning for total_revenue_calculation")
     total_revenue: Optional[float] = Field(None, description="The total revenue for the period, if applicable.")
+
+    total_expenses_calculation: str = Field(None, description="Calculation proof and reasoning for total_expenses")
     total_expenses: Optional[float] = Field(None, description="The total expenses for the period, if applicable.")
+
+    total_net_income: str = Field(None, description="Calculation proof and reasoning for net_income")
     net_income: Optional[float] = Field(None, description="The final net income (profit/loss) for the period, if applicable.")
+
     currency: Optional[str] = Field(None, description="The 3-letter ISO currency code of the metrics, if applicable.")
     period_start_date: Optional[str] = Field(
         None,

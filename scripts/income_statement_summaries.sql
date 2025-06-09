@@ -3,6 +3,7 @@
 
 -- Ensure the uuid-ossp extension is available
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+drop table if exists income_statement_summaries cascade;
 
 -- Create the table
 CREATE TABLE public.income_statement_summaries (
@@ -24,7 +25,7 @@ CREATE TABLE public.income_statement_summaries (
 
     -- Metadata for the summary
     currency VARCHAR(3) NOT NULL DEFAULT 'USD',
-    period_start_date DATE NOT NULL,
+    period_start_date DATE,
     period_end_date DATE NOT NULL,
 
     -- Standard timestamp columns
