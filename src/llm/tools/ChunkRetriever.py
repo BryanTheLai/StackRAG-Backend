@@ -68,7 +68,7 @@ class RetrievalService:
     def retrieve_chunks(
         self,
         query_text: str,
-        match_count: int = 5,
+        match_count: int = 20,
         doc_specific_type: str = None,
         company_name: str = None,
         doc_year_start: int = None,
