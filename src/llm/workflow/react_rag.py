@@ -57,7 +57,7 @@ async def run_react_rag(
     try:
         async with agent.run_stream(user_input, message_history=same_history_as_step_1) as result:  
             async for message in result.stream_text(delta=True):                  
-                print(f"[DEBUG] message received: {message}")
+                print(f"{message}")
                 yield message
     except Exception as e:
         import traceback
