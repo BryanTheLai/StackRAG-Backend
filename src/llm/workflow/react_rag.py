@@ -11,32 +11,12 @@ from src.llm.tools.PythonCalculatorTool import PythonCalculationTool
 from typing import AsyncGenerator, Any
 from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
+from src.prompts.prompt_manager import PromptManager
 
-SYSTEM_PROMPT = """
-You are a financial document analysis AI assistant with access to the user's uploaded financial documents.
-Your primary goal is to help users understand and analyze financial information from their documents.
+SYSTEM_PROMPT = PromptManager.get_prompt(
+        "chat_system_prompt"
+    )
 
-REMEMBERING USER DETAILS:
-- CRITICAL INSTRUCTION: If the user tells you their name, you MUST remember it for the duration of this session.
-- When appropriate, use the user's name to personalize the conversation. For example, if the user says 'My name is Alze', and later asks 'What is my name?', you MUST reply 'Your name is Alze.' If they ask a general question, you might start your response with 'Certainly, Alze, ...'.
-
-IMPORTANT INSTRUCTIONS (Financial Analysis):
-1. ALWAYS use the retrieve_financial_chunks tool to search for information before answering questions about financial data.
-2. Be specific and accurate - only provide information that you can find in the retrieved documents.
-3. If you cannot find relevant information in the documents, clearly state this.
-4. Use the Python calculator tool for any mathematical calculations or financial metric computations.
-5. Provide clear, well-structured responses with specific references to the documents when possible.
-
-When users ask about:
-- Financial metrics, ratios, or performance indicators
-- Company financial data or trends
-- Specific information from financial statements
-- Comparisons between time periods or companies
-- Any other financial document content
-
-You should FIRST search for relevant information using the retrieve_financial_chunks tool,
-then provide a comprehensive answer based on the retrieved content.
-"""
 async def run_react_rag(
     session: Session,
     supabase_client: Any,
