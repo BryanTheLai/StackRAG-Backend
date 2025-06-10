@@ -15,3 +15,4 @@ uvicorn[standard]==0.34.3
 pydantic-ai==0.2.14
 Jinja2==3.1.6
 chonkie[all]==1.0.6
+mangum==0.18.0
