@@ -11,7 +11,8 @@ CREATE OR REPLACE FUNCTION match_chunks (
   p_company_name text DEFAULT NULL,
   p_doc_year_start integer DEFAULT NULL,
   p_doc_year_end integer DEFAULT NULL,
-  p_doc_quarter integer DEFAULT NULL
+  p_doc_quarter integer DEFAULT NULL,
+  p_report_date date DEFAULT NULL
 )
 -- Updated RETURNS TABLE to include document_filename
 RETURNS TABLE (
@@ -60,9 +61,12 @@ BEGIN
     -- Apply doc_specific_type filter if provided (not NULL)
     AND (p_doc_specific_type IS NULL OR c.doc_specific_type = p_doc_specific_type)
 
-    -- Apply company_name filter if provided (not NULL and not empty)
-    -- Using ILIKE for case-insensitivity and '%' for wildcard (contains)
-    AND (p_company_name IS NULL OR p_company_name = '' OR c.company_name ILIKE '%' || p_company_name || '%')
+    -- Apply company_name filter if provided (using case-insensitive partial match via ILIKE and wildcards)
+    AND (
+      p_company_name IS NULL
+      OR trim(p_company_name) = ''
+      OR c.company_name ILIKE '%' || p_company_name || '%'
+    )
 
     -- Apply doc_year range filter if start/end years are provided
     AND (p_doc_year_start IS NULL OR c.doc_year >= p_doc_year_start)
@@ -70,6 +74,8 @@ BEGIN
 
     -- Apply doc_quarter filter if provided (not NULL)
     AND (p_doc_quarter IS NULL OR c.doc_quarter = p_doc_quarter)
+    -- Apply report_date filter if provided (not NULL)
+    AND (p_report_date IS NULL OR c.report_date = p_report_date)
 
   ORDER BY
     c.embedding <=> query_embedding

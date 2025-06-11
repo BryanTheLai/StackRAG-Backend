@@ -7,7 +7,7 @@ from src.models.metadata_models import FinancialDocumentMetadata
 class ChunkingService:
     """Split markdown into fixed-size chunks."""
 
-    def __init__(self, chunk_size: int = 2048, min_characters_per_chunk: int = 24):
+    def __init__(self, chunk_size: int = 4096, min_characters_per_chunk: int = 1024):
         print("Initializing ChunkingService...")
         self.chunker = RecursiveChunker.from_recipe(
             "markdown", lang="en",

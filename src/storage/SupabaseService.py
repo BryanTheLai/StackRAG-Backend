@@ -83,7 +83,7 @@ class SupabaseService:
                 "doc_type": doc_type,
                 "doc_specific_type": metadata.doc_specific_type.value if metadata.doc_specific_type else None,
                 "company_name": metadata.company_name if metadata.company_name else None,
-                "report_date": metadata.report_date if metadata.report_date != "1900-01-01" else None,
+                "report_date": metadata.report_date, # Simplified: Pydantic model ensures it's str or None
                 "doc_year": metadata.doc_year if metadata.doc_year != -1 else None,
                 "doc_quarter": metadata.doc_quarter if metadata.doc_quarter != -1 else None,
                 "doc_summary": metadata.doc_summary,
@@ -215,3 +215,72 @@ class SupabaseService:
         except Exception as e:
             print(f"Error updating document status: {e}")
             return False
+
+    def save_income_statement_summary(
+        self,
+        document_id: uuid.UUID,
+        user_id: uuid.UUID,
+        metadata: FinancialDocumentMetadata
+    ) -> Optional[uuid.UUID]:
+        """Saves an income statement summary to the 'income_statement_summaries' table."""
+        print(f"Attempting to save income statement summary for document_id: {document_id} by user_id: {user_id}")
+
+        required_fields = {
+            "total_revenue": metadata.total_revenue,
+            "total_expenses": metadata.total_expenses,
+            "net_income": metadata.net_income,
+            "period_end_date": metadata.period_end_date
+        }
+
+        missing_fields = [field_name for field_name, value in required_fields.items() if value is None]
+
+        if missing_fields:
+            print(f"Error: Missing required financial data fields: {', '.join(missing_fields)} in metadata for document {document_id}. Cannot save summary.")
+            return None
+
+        summary_data_payload = {
+            "document_id": str(document_id),
+            "user_id": str(user_id),
+            "total_revenue": metadata.total_revenue,
+            "total_expenses": metadata.total_expenses,
+            "net_income": metadata.net_income,
+            "period_start_date": metadata.period_start_date, # Expected 'YYYY-MM-DD'
+            "period_end_date": metadata.period_end_date,     # Expected 'YYYY-MM-DD'
+        }
+
+        # Handle currency: SQL table has NOT NULL DEFAULT 'USD'.
+        # If metadata.currency is provided, use it. Otherwise, omit from payload to use DB default.
+        if metadata.currency is not None:
+            summary_data_payload["currency"] = metadata.currency
+        else:
+            print(f"Info: Currency not provided in metadata for document {document_id}. Relying on database default 'USD'.")
+
+
+        try:
+            print(f"Executing insert for income statement summary with payload: {summary_data_payload}")
+            response = self.client.table('income_statement_summaries').insert(summary_data_payload).execute()
+
+            if response.data and len(response.data) > 0:
+                inserted_summary = response.data[0]
+                # The 'income_statement_summaries' table has its own 'id' as PK
+                summary_id = uuid.UUID(inserted_summary['id'])
+                print(f"Income statement summary saved successfully. Summary ID: {summary_id} for Document ID: {document_id}")
+                return summary_id
+            else:
+                error_message = "Unknown error"
+                if hasattr(response, 'error') and response.error:
+                    error_message = response.error.message if hasattr(response.error, 'message') else str(response.error)
+                print(f"Failed to save income statement summary for document {document_id}. Supabase response: {response.data}, Error: {error_message}")
+                return None
+
+        except Exception as e:
+            error_str = str(e)
+            print(f"Exception saving income statement summary for document {document_id}: {error_str}")
+            # Check for unique constraint violation on document_id, as it's UNIQUE in income_statement_summaries
+            if "duplicate key value violates unique constraint" in error_str and "income_statement_summaries_document_id_key" in error_str:
+                print(f"Hint: An income statement summary for document_id {document_id} already exists.")
+            elif "invalid input for type numeric" in error_str:
+                 print(f"Hint: Check if numeric fields (revenue, expenses, net_income) are valid numbers.")
+            elif "invalid input syntax for type date" in error_str:
+                 print(f"Hint: Check if date fields (period_start_date, period_end_date) are in 'YYYY-MM-DD' format.")
+            return None
