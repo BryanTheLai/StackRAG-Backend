@@ -15,17 +15,15 @@ RETRIEVE_CHUNKS_DECLARATION_DATA = {
             "query_text": {"type": "string", "description": "The user's original question or a refined search query."},
             "match_count": {"type": "integer", "description": "Max chunks to return. Default 5."},
             "doc_specific_type": {
-                "type": "string", 
+                "type": "string",
                 "description": f"Specific document type. Examples: {', '.join([item.value for item in FinancialDocSpecificType if item != FinancialDocSpecificType.UNKNOWN and item.value is not None])}.",
                 "enum": [item.value for item in FinancialDocSpecificType if item != FinancialDocSpecificType.UNKNOWN and item.value is not None]
-                },
+            },
             "company_name": {"type": "string", "description": "Company name to filter by."},
             "doc_year_start": {"type": "integer", "description": "Starting fiscal year."},
             "doc_year_end": {"type": "integer", "description": "Ending fiscal year."},
-            "doc_quarter": {
-                "type": "integer", 
-                "description": "Fiscal quarter (1-4).",
-                },
+            "doc_quarter": {"type": "integer", "description": "Fiscal quarter (1-4)."},
+            "report_date": {"type": "string", "description": "Report date filter in YYYY-MM-DD format."}
         },
         "required": ["query_text"]
     },
@@ -68,16 +66,17 @@ class RetrievalService:
     def retrieve_chunks(
         self,
         query_text: str,
-        match_count: int = 5,
+        match_count: int = 20,
         doc_specific_type: str = None,
         company_name: str = None,
         doc_year_start: int = None,
         doc_year_end: int = None,
-        doc_quarter: int = None
+        doc_quarter: int = None,
+        report_date: str = None
     ) -> str:
         """
         Generates an embedding for the query and calls the Supabase RPC
-        to find relevant chunks based on similarity and filters.
+        to find relevant chunks based on similarity and filters, optionally filtering by report_date.
 
         Args:
             query_text: The user's question or search query.
@@ -88,6 +87,7 @@ class RetrievalService:
             doc_year_start: Filter by fiscal year start.
             doc_year_end: Filter by fiscal year end.
             doc_quarter: Filter by fiscal quarter (1-4).
+            report_date: Filter by report date (YYYY-MM-DD).
 
         Returns:
             A JSON string representing the list of retrieved chunks, or an error JSON string.
@@ -96,7 +96,7 @@ class RetrievalService:
         print(f"\n--- Executing RetrievalService.retrieve_chunks ---")
         print(f"  Query: '{query_text}'")
         print(f"  User ID for retrieval: {self._user_id}")
-        print(f"  Filters: Type={doc_specific_type}, Company={company_name}, Year={doc_year_start}-{doc_year_end}, Qtr={doc_quarter}")
+        print(f"  Filters: Type={doc_specific_type}, Company={company_name}, Year={doc_year_start}-{doc_year_end}, Qtr={doc_quarter}, Date={report_date}")
 
         try:
             # 1. Generate Embedding for the query
@@ -120,7 +120,8 @@ class RetrievalService:
                     'p_company_name': company_name,
                     'p_doc_year_start': doc_year_start,
                     'p_doc_year_end': doc_year_end,
-                    'p_doc_quarter': doc_quarter
+                    'p_doc_quarter': doc_quarter,
+                    'p_report_date': report_date
                 }
             ).execute()
 
