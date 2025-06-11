@@ -160,5 +160,8 @@ cython_debug/
 #.idea/
 
 
-output_folder
+output_folder/
 consolidated_code.md
+data/
+consolidated_code.md
+scraper.py
