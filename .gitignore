@@ -162,3 +162,7 @@ cython_debug/
 
 output_folder
 consolidated_code.md
+notebooks
+data
+docs
+scraper.py
