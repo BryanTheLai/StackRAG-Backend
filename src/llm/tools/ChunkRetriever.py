@@ -13,7 +13,7 @@ RETRIEVE_CHUNKS_DECLARATION_DATA = {
         "type": "object",
         "properties": {
             "query_text": {"type": "string", "description": "The user's original question or a refined search query."},
-            "match_count": {"type": "integer", "description": "Max chunks to return. Default 5."},
+            "match_count": {"type": "integer", "description": "Max initial chunks to identify relevant sections. Default 50. For broad queries (e.g., full year), a higher count (50-100) helps find diverse sections."},
             "doc_specific_type": {
                 "type": "string",
                 "description": f"Specific document type. Examples: {', '.join([item.value for item in FinancialDocSpecificType if item != FinancialDocSpecificType.UNKNOWN and item.value is not None])}.",
@@ -46,12 +46,12 @@ class RetrievalService:
         Args:
             openai_client: An initialized OpenAIClient instance for embeddings.
             supabase_service: An initialized SupabaseService instance for database interaction.
+            user_id: The ID of the user making the request.
         """
         if not isinstance(openai_client, OpenAIClient):
-             raise TypeError("openai_client must be an instance of OpenAIClient")
+            raise TypeError("openai_client must be an instance of OpenAIClient") # Added type check
         if not isinstance(supabase_service, SupabaseService):
-             raise TypeError("supabase_service must be an instance of SupabaseService")
-             
+            raise TypeError("supabase_service must be an instance of SupabaseService") # Added type check
         self._openai_client = openai_client
         self._supabase_service = supabase_service
         self._user_id = user_id
@@ -66,7 +66,7 @@ class RetrievalService:
     def retrieve_chunks(
         self,
         query_text: str,
-        match_count: int = 20,
+        match_count: int = 50, # This is now the initial match_count to find relevant sections
         doc_specific_type: str = None,
         company_name: str = None,
         doc_year_start: int = None,
@@ -75,89 +75,94 @@ class RetrievalService:
         report_date: str = None
     ) -> str:
         """
-        Generates an embedding for the query and calls the Supabase RPC
-        to find relevant chunks based on similarity and filters, optionally filtering by report_date.
-
-        Args:
-            query_text: The user's question or search query.
-            user_id: The authenticated user's ID (UUID string).
-            match_count: The maximum number of chunks to return.
-            doc_specific_type: Filter by specific document type.
-            company_name: Filter by company name.
-            doc_year_start: Filter by fiscal year start.
-            doc_year_end: Filter by fiscal year end.
-            doc_quarter: Filter by fiscal quarter (1-4).
-            report_date: Filter by report date (YYYY-MM-DD).
-
-        Returns:
-            A JSON string representing the list of retrieved chunks, or an error JSON string.
-            Returns JSON string to match the expected output format for Gemini tool calls.
+        Retrieves relevant financial document chunks.
+        First, it finds initial relevant chunks based on the query.
+        Then, it fetches all chunks from the sections containing these initial chunks.
         """
-        print(f"\n--- Executing RetrievalService.retrieve_chunks ---")
-        print(f"  Query: '{query_text}'")
+        print(f"  RetrievalService.retrieve_chunks called with query: '{query_text}'")
         print(f"  User ID for retrieval: {self._user_id}")
-        print(f"  Filters: Type={doc_specific_type}, Company={company_name}, Year={doc_year_start}-{doc_year_end}, Qtr={doc_quarter}, Date={report_date}")
+        print(f"  Initial match_count for section identification: {match_count}")
+        print(f"  Filters: Type={doc_specific_type}, Company={company_name}, YearStart={doc_year_start}, YearEnd={doc_year_end}, Qtr={doc_quarter}, Date={report_date}")
 
         try:
-            # 1. Generate Embedding for the query
-            query_embedding_list = self._openai_client.get_embeddings([query_text])
-            if not query_embedding_list:
-                print(f"  Error: Failed to generate query embedding.")
-                return json.dumps({"error": "Failed to generate query embedding."})
-            query_embedding = query_embedding_list[0]
-            print(f"  Query embedding generated.")
+            # Corrected method name from get_embedding to get_embeddings
+            # and adjusted to pass a list and expect a list of embeddings, taking the first one.
+            embeddings_list = self._openai_client.get_embeddings([query_text])
+            if not embeddings_list:
+                raise ValueError("Embedding generation returned an empty list.")
+            embedding = embeddings_list[0] 
+            print("  Query embedding generated.")
+        except Exception as e:
+            print(f"  Error generating embedding: {e}")
+            return json.dumps({"error": "Failed to generate query embedding.", "details": str(e)})
 
-            # 2. Call Supabase RPC 'match_chunks'
-            print(f"  Calling Supabase RPC 'match_chunks'...")
-            # Use the supabase_client directly from the SupabaseService instance
-            response = self._supabase_service.client.rpc(
-                'match_chunks',
+        # Step 1: Call match_chunks to get initial relevant chunks and identify sections
+        print(f"  Calling Supabase RPC 'match_chunks' to identify relevant sections with match_count={match_count}...")
+        try:
+            initial_response = self._supabase_service.client.rpc( # Changed to use self._supabase_service.client.rpc
+                "match_chunks",
                 {
-                    'query_embedding': query_embedding,
-                    'match_count': match_count,
-                    'user_id': self._user_id, # Pass the authenticated user_id to the RPC
-                    'p_doc_specific_type': doc_specific_type,
-                    'p_company_name': company_name,
-                    'p_doc_year_start': doc_year_start,
-                    'p_doc_year_end': doc_year_end,
-                    'p_doc_quarter': doc_quarter,
-                    'p_report_date': report_date
+                    "query_embedding": embedding,
+                    "match_count": match_count, # Use the provided match_count for this initial step
+                    "user_id": self._user_id,
+                    "p_doc_specific_type": doc_specific_type,
+                    "p_company_name": company_name,
+                    "p_doc_year_start": doc_year_start,
+                    "p_doc_year_end": doc_year_end,
+                    "p_doc_quarter": doc_quarter,
+                    "p_report_date": report_date,
+                },
+            ).execute()
+            initial_chunks_data = initial_response.data
+            print(f"  Retrieved {len(initial_chunks_data)} initial chunks for section identification.")
+        except Exception as e:
+            print(f"  Error calling 'match_chunks' RPC: {e}")
+            return json.dumps({"error": "Failed to retrieve initial chunks.", "details": str(e)})
+
+        if not initial_chunks_data:
+            return json.dumps([]) # Return empty list if no initial chunks found
+
+        # Step 2: Extract unique section_ids from these initial chunks
+        section_ids = list(set(
+            chunk['section_id'] for chunk in initial_chunks_data if chunk.get('section_id')
+        ))
+
+        if not section_ids:
+            print("  No section_ids found in initial chunks. Returning initial chunks directly.")
+            # If no section_ids, return the initially fetched chunks (already formatted)
+            return json.dumps(initial_chunks_data, default=str)
+
+        print(f"  Identified {len(section_ids)} unique section(s) from initial chunks: {section_ids}")
+
+        # Step 3: Call a new RPC function 'get_chunks_for_sections' to fetch all chunks for these section_ids
+        print(f"  Calling Supabase RPC 'get_chunks_for_sections' for {len(section_ids)} section(s)...")
+        try:
+            sections_response = self._supabase_service.client.rpc( # Changed to use self._supabase_service.client.rpc
+                "get_chunks_for_sections",
+                {
+                    "p_section_ids": section_ids,
+                    "p_user_id": self._user_id
                 }
             ).execute()
-
-            # 3. Process RPC Response
-            if response.data is not None:
-                print(f"  Retrieved {len(response.data)} chunks from Supabase.")
-                processed_data = []
-                for chunk_dict in response.data:
-                    processed_chunk = {}
-                    for key, value in chunk_dict.items():
-                        if isinstance(value, uuid.UUID):
-                            processed_chunk[key] = str(value)
-                        else:
-                            processed_chunk[key] = value
-                    # Ensure expected keys are present, adding defaults if missing
-                    processed_chunk['document_filename'] = processed_chunk.get('document_filename', 'RPC_Missing_Doc_Name')
-                    # Use chunk id as fallback for section_id if missing
-                    processed_chunk['section_id'] = processed_chunk.get('section_id', str(processed_chunk.get('id', 'RPC_Missing_Section_ID')))
-                    processed_chunk['chunk_text'] = processed_chunk.get('chunk_text', 'Chunk text missing from RPC.')
-                    processed_chunk['section_heading'] = processed_chunk.get('section_heading', 'Section heading missing from RPC.')
-                    
-                    processed_data.append(processed_chunk)
-
-                result_json_string = json.dumps(processed_data, indent=2)
-                print(f"  Returning JSON result ({len(result_json_string)} chars, first 500 for brevity):\n{result_json_string[:500]}...")
-                return result_json_string
-            elif hasattr(response, 'error') and response.error:
-                 error_msg = f"Supabase RPC 'match_chunks' error: {response.error.message if hasattr(response.error, 'message') else response.error}"
-                 print(f"  Error: {error_msg}")
-                 return json.dumps({"error": error_msg})
-            else:
-                # Handle cases where data is None and there's no explicit error object
-                print("  Received unexpected empty/none response structure from Supabase RPC 'match_chunks'.")
-                return json.dumps({"error": "Unexpected empty response from Supabase RPC."})
-
+            all_section_chunks_data = sections_response.data
+            print(f"  Retrieved {len(all_section_chunks_data)} chunks from {len(section_ids)} identified sections.")
         except Exception as e:
-            # Catch any other unexpected errors during the process
-            print(f"An unexpected error occurred during chunk retrieval: {str(e)}\n{traceback.format_exc()}")
-            return json.dumps({"error": f"An unexpected error occurred during chunk retrieval: {str(e)}"})
+            print(f"  Error calling 'get_chunks_for_sections' RPC: {e}")
+            # Fallback: return initial chunks if fetching full sections fails
+            print("  Falling back to returning initial chunks due to error.")
+            return json.dumps(initial_chunks_data, default=str)
+
+        # Add a null similarity_score to chunks from get_chunks_for_sections for consistency
+        # as the original match_chunks provides it.
+        for chunk in all_section_chunks_data:
+            chunk.setdefault('similarity_score', None) # Or calculate if meaningful
+
+        # Sort the final list of chunks for consistent output
+        all_section_chunks_data.sort(key=lambda c: (
+            c.get('document_filename', ''),
+            c.get('section_id', ''),
+            c.get('chunk_index', 0)
+        ))
+        
+        print(f"  Returning {len(all_section_chunks_data)} total chunks as JSON result.")
+        return json.dumps(all_section_chunks_data, default=str)

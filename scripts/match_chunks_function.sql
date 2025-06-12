@@ -83,3 +83,51 @@ BEGIN
     match_count; -- Limit the number of results as requested
 END;
 $$;
+
+-- New function to get all chunks for a list of section_ids
+CREATE OR REPLACE FUNCTION get_chunks_for_sections (
+  p_section_ids uuid[],
+  p_user_id uuid
+)
+RETURNS TABLE (
+  id uuid,
+  chunk_text text,
+  document_id uuid,
+  section_id uuid,
+  section_heading text,
+  chunk_index integer,
+  doc_specific_type text,
+  doc_year integer,
+  doc_quarter integer,
+  company_name text,
+  report_date date,
+  document_filename text
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    c.id,
+    c.chunk_text,
+    c.document_id,
+    c.section_id,
+    c.section_heading,
+    c.chunk_index,
+    c.doc_specific_type,
+    c.doc_year,
+    c.doc_quarter,
+    c.company_name,
+    c.report_date,
+    d.filename AS document_filename
+  FROM
+    chunks AS c
+  JOIN
+    documents AS d ON c.document_id = d.id
+  WHERE
+    c.user_id = p_user_id
+    AND c.section_id = ANY(p_section_ids) -- Filter by the provided section_ids
+  ORDER BY
+    c.document_id, c.section_id, c.chunk_index; -- Ensure consistent ordering
+END;
+$$;
