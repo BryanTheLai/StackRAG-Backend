@@ -4,7 +4,7 @@ from pydantic_ai.models.google import GoogleModel
 from pydantic_ai.providers.google import GoogleProvider
 from pydantic_core import to_jsonable_python
 from pydantic_ai.messages import ModelMessagesTypeAdapter  
-from supabase import create_client  # removed SyncClient import
+from supabase import create_client
 from api.v1.dependencies import SUPABASE_KEY, SUPABASE_URL, Session
 from src.llm.tools.FunctionCaller import RetrievalService
 from src.llm.tools.PythonCalculatorTool import PythonCalculationTool
@@ -13,8 +13,10 @@ from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 from src.prompts.prompt_manager import PromptManager
 
+
 SYSTEM_PROMPT = PromptManager.get_prompt(
-        "chat_system_prompt"
+        "chat_system_prompt",
+        APP_DOMAIN="https://stackifier.com"
     )
 
 async def run_react_rag(
@@ -31,12 +33,15 @@ async def run_react_rag(
     # initialize tools
     retrieval = RetrievalService(
         openai_client=OpenAIClient(),
-        supabase_service = SupabaseService(supabase_client=supabase_client),
+        supabase_service=SupabaseService(supabase_client=supabase_client),
         user_id=user_id
     )
     calculator = PythonCalculationTool()
-    
-    provider = GoogleProvider(api_key=os.environ.get("GEMINI_API_KEY"))
+    # Ensure GEMINI_API_KEY is set and retrieve directly for str type
+    if "GEMINI_API_KEY" not in os.environ:
+        raise EnvironmentError("GEMINI_API_KEY must be set as an environment variable")
+    gemini_key = os.environ["GEMINI_API_KEY"]
+    provider = GoogleProvider(api_key=gemini_key)
     model = GoogleModel('gemini-2.5-flash-preview-05-20', provider=provider)
 
     # ensure message_history is JSON serializable
@@ -44,9 +49,9 @@ async def run_react_rag(
     same_history_as_step_1 = ModelMessagesTypeAdapter.validate_python(history_for_model)
     print(same_history_as_step_1)
 
-    # Instantiate agent including prior chat context
+    # Instantiate agent with keyword args to satisfy signature
     agent = Agent(
-        model,
+        model=model,
         tools=[retrieval.retrieve_chunks, calculator.execute_python_calculations],
         system_prompt=SYSTEM_PROMPT,
         streaming=True,
@@ -75,9 +80,10 @@ if __name__ == '__main__':
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     import asyncio
-    # Test run_react_rag function
-    session = Session(user_id='test_user', token=SUPABASE_KEY)
-    test_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    # Ensure Supabase credentials and cast to str to satisfy type
+    assert SUPABASE_URL and SUPABASE_KEY, "SUPABASE_URL and SUPABASE_KEY must be set"
+    session = Session(user_id='test_user', token=str(SUPABASE_KEY))
+    test_client = create_client(str(SUPABASE_URL), str(SUPABASE_KEY))
     async def main_test():
         print('[TEST] Starting run_react_rag test')
         async for chunk in run_react_rag(session, test_client, 'Hello RAG test', []):

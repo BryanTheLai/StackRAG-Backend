@@ -9,14 +9,11 @@ from src.config.gemini_config import DEFAULT_CHAT_MODEL
 class GeminiClient:
     """Client for interacting with Google Gemini AI."""
     
-    GEMINI_CHAT_SYSTEM_PROMPT = PromptManager.get_prompt(
-        "chat_system_prompt"
-    )
     def __init__(
         self, 
         api_key: Optional[str] = None, 
         model: str = DEFAULT_CHAT_MODEL, 
-        system_instructions: str = GEMINI_CHAT_SYSTEM_PROMPT,
+        system_instructions: str = "You are a helpful assistant",
         config: Optional[types.GenerateContentConfig] = None):
         """Initialize client with API key."""
         load_dotenv()

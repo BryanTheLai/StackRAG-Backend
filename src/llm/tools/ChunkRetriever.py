@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 import uuid
 import json
 import traceback
@@ -6,8 +6,9 @@ from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 from src.enums import FinancialDocSpecificType
 
+# Update tool declaration name and staticmethod to align with Pydantic AI expectations
 RETRIEVE_CHUNKS_DECLARATION_DATA = {
-    "name": "retrieve_financial_chunks",
+    "name": "retrieve_chunks",
     "description": "Searches and retrieves relevant text chunks from the user's uploaded financial documents based on their query and optional filters like company name, document type, year range, or quarter. Always use this tool to find information before answering questions about the user's financial documents.",
     "parameters": {
         "type": "object",
@@ -57,9 +58,9 @@ class RetrievalService:
         self._user_id = user_id
 
     @staticmethod
-    def get_tool_declaration() -> Dict:
+    def get_tool_declaration_data() -> Dict:
         """
-        Returns the Gemini tool declaration for the retrieve_financial_chunks function.
+        Returns the tool declaration data for the retrieve_chunks tool.
         """
         return RETRIEVE_CHUNKS_DECLARATION_DATA
 
@@ -67,12 +68,12 @@ class RetrievalService:
         self,
         query_text: str,
         match_count: int = 50, # This is now the initial match_count to find relevant sections
-        doc_specific_type: str = None,
-        company_name: str = None,
-        doc_year_start: int = None,
-        doc_year_end: int = None,
-        doc_quarter: int = None,
-        report_date: str = None
+        doc_specific_type: Optional[str] = None,
+        company_name: Optional[str] = None,
+        doc_year_start: Optional[int] = None,
+        doc_year_end: Optional[int] = None,
+        doc_quarter: Optional[int] = None,
+        report_date: Optional[str] = None
     ) -> str:
         """
         Retrieves relevant financial document chunks.
@@ -90,7 +91,7 @@ class RetrievalService:
             embeddings_list = self._openai_client.get_embeddings([query_text])
             if not embeddings_list:
                 raise ValueError("Embedding generation returned an empty list.")
-            embedding = embeddings_list[0] 
+            embedding = embeddings_list[0]
             print("  Query embedding generated.")
         except Exception as e:
             print(f"  Error generating embedding: {e}")
