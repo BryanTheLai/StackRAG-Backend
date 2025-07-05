@@ -12,6 +12,7 @@ from typing import AsyncGenerator, Any
 from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 from src.prompts.prompt_manager import PromptManager
+from src.config.gemini_config import DEFAULT_CHAT_MODEL
 from datetime import datetime, timezone
 
 def create_system_prompt(**user_details):
@@ -70,7 +71,7 @@ async def run_react_rag(
         raise EnvironmentError("GEMINI_API_KEY must be set as an environment variable")
     gemini_key = os.environ["GEMINI_API_KEY"]
     provider = GoogleProvider(api_key=gemini_key)
-    model = GoogleModel('gemini-2.5-flash-preview-05-20', provider=provider)
+    model = GoogleModel(DEFAULT_CHAT_MODEL, provider=provider)
 
     # ensure message_history is JSON serializable
     history_for_model = to_jsonable_python(message_history) if message_history else []  # use only user and assistant messages
