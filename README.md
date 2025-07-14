@@ -76,10 +76,29 @@ A reliable assistant for financial documents combining deterministic Python tool
 ---
 
 ## Next Steps
-- Integrate with QuickBooks, cloud storage, email.
-- Build dashboards and export (CSV/XLSX).
-- Enhance table parsing, OCR for scanned docs.
-- Improve error handling and model fine-tuning.
+- Create Dataset
+    - User Demo: 1 sop? 1 report? idk, what do i need to make the demo go smoothly and showcase the full power of the app?
+        - For 2 accounts
+        1. 1 annual report
+        2. 2 simple 1 page quaterly reports
+        3. 1 competitor annual report
+    - Eval
+        ```json
+        [
+            {
+                "question_id": "TC001",
+                "question": "What was the total revenue for MegaCorp in 2023?",
+                "ground_truth_answer": "The total revenue for MegaCorp in 2023 was $45.2 million.",
+                "ground_truth_context_ids": ["chunk_id_from_financial_highlights_table"],
+                "expected_doc_id": "id_of_megacorp_annual_report_2023.pdf"
+            },
+        ```
+
+- evaluate_rag.ipynb
+    1. Context Precision: Of the chunks you retrieved, how many were actually relevant?
+    2. Context Recall: Of the chunks you should have retrieved, how many did you actually get?
+    3. Answer Correctness (LLM-as-a-Judge): This is a modern, effective technique. You ask a powerful LLM (like GPT-4 or Gemini 1.5 Pro) to rate the correctness of your agent's answer.
+    4. Report Results: Calculate the averages and display them.
 
 ---
 
