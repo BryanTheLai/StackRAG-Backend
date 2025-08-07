@@ -11,6 +11,9 @@
 
 *Transform unstructured financial PDFs into intelligent, queryable insights with AI*
 
+**Frontend Source**: [StackRAG-Frontend](https://github.com/BryanTheLai/StackRAG-Frontend)
+
+
 [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Architecture](#-system-architecture) • [API Reference](#-api-reference) • [Contributing](#-contributing)
 
 </div>
