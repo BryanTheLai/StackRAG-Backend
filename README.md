@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏦 Stackifier - Backend
+# 🏦 StackRAG - Backend
 
 **AI-Powered Financial Document Analysis Platform**
 
