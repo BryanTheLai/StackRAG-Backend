@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏦 Stackifier
+# 🏦 Stackifier - Backend
 
 **AI-Powered Financial Document Analysis Platform**
 
