@@ -419,13 +419,6 @@ Found a bug? Please open an issue with:
 - Expected vs actual behavior
 - Environment details
 
-## 📊 Performance & Monitoring
-
-### Key Metrics
-- **Document Processing**: <30 seconds for typical financial reports
-- **Query Response**: <100ms for semantic search
-- **Throughput**: 100+ concurrent users supported
-- **Accuracy**: 95%+ financial data extraction accuracy
 
 ### Health Monitoring
 ```bash
