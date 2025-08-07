@@ -19,7 +19,25 @@
 
 ## 🚀 Overview
 
-Stackifier is a production-ready, multi-tenant platform that transforms complex financial documents into an intelligent knowledge base. Built with enterprise-grade security and scalability in mind, it combines sophisticated document processing with conversational AI to deliver an "AI CFO" experience.
+Stackifier is a **production-ready**, **multi-tenant RAG platform** engineered for financial document intelligence. The system combines a sophisticated **ETL ingestion pipeline** with a **ReAct-style conversational agent**, leveraging **multimodal LLMs**, **vector embeddings**, and a comprehensive **prompt library** to transform unstructured PDFs into **queryable knowledge graphs**. Built on **FastAPI** with enterprise-grade **JWT authentication**, **row-level security policies**, and **containerized deployment architecture**.
+
+### 🎯 Prerequisites & Learning Outcomes
+
+**To understand and contribute to this project, developers should be familiar with:**
+
+- **Vector Mathematics & Information Retrieval**: Understanding similarity search algorithms, high-dimensional vector spaces, and semantic embedding techniques for document retrieval systems
+- **Advanced Python Patterns**: Object-oriented design principles, dependency injection, async/await patterns, and type-safe development with Pydantic
+- **Database Design & Optimization**: Relational schema normalization, PostgreSQL advanced features (RLS, RPC functions), and hybrid relational/document storage with JSONB
+- **Prompt Engineering & LLM Integration**: Dynamic prompt templating with Jinja2, structured output generation, and ReAct agent framework implementation
+- **Microservices Architecture**: Service decomposition, API design patterns, containerization strategies, and external service integration
+- **ETL Pipeline Design**: Data transformation workflows, fault-tolerant processing, and batch operations for unstructured data ingestion
+
+**By working with this codebase, developers will gain hands-on experience with:**
+- Production LLM application development using frameworks like `pydantic-ai`
+- Multi-modal AI processing for document analysis and structured data extraction  
+- Enterprise-grade security patterns including JWT authentication and row-level security
+- Real-time streaming APIs and Server-Sent Events for conversational interfaces
+- Financial domain modeling and specialized business logic implementation
 
 ### ✨ Key Features
 
@@ -274,8 +292,8 @@ erDiagram
 ### 📖 Additional Resources
 
 - **[Docker Deployment Guide](DOCKER_GUIDE.md)** - Production deployment instructions
-- **[API Documentation](http://localhost:8000/docs)** - Interactive OpenAPI documentation
-- **[Architecture Deep Dive](docs/)** - Detailed technical documentation
+<!-- - **[API Documentation](http://localhost:8000/docs)** - Interactive OpenAPI documentation
+- **[Architecture Deep Dive](docs/)** - Detailed technical documentation -->
 
 ### 🔗 Integration Guide
 
