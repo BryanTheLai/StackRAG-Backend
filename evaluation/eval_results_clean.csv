@@ -1,0 +1,388 @@
+test_id,question,generated_answer,tags,execution_time,execution_success,number_accuracy,answer_correctness,faithfulness,rag_success,estimated_cost,evaluation_explanation
+REVENUE_001,"What was the revenue for Stellar Goods Inc. for the month ended February 28, 2023?","I have found the revenue figure for Stellar Goods Inc. for the exact period ""For the Month Ended Feb 28, 2023"" in the income statement document dated 2023-02-28.
+
+The reported revenue is $900,000.00 (already in actual dollars, no ""(in thousands)"" notation present).
+
+Therefore:
+
+**Revenue for Stellar Goods Inc. for the month ended February 28, 2023 = $900,000.00**
+
+For detailed reference, see the income statement document:
+
+<PDFNav>
+  {
+  ""documentId"": ""ccf0eb46-ac32-488a-b9e5-32f1df626b15"",
+  ""filename"": ""Income Statements - Feb.pdf"",
+  ""page"": 1,
+  ""context"": ""Contains the income statement data for the month ended Feb 28, 2023, including the revenue figure"",
+  ""highlight"": {
+    ""text"": ""For the Month Ended Feb 28, 2023 - Revenue $900,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. Income Statements - Feb.pdf](https://stackifier.com/private/documents?id=ccf0eb46-ac32-488a-b9e5-32f1df626b15)","accuracy,single-doc,basic-fact",9.67716908454895,True,PASS,PASS,PASS,PASS,0.00035125000000000005,The AI system correctly identified the revenue for Stellar Goods Inc. for the specified period and presented it accurately. The numerical value and the unit (actual dollars) are correct. The response is faithful to the provided context and directly answers the user's question.
+NET_INCOME_001,"What was the net income for Stellar Goods Inc. for the month ended January 31, 2023?","I found the income statement for Stellar Goods Inc. for the exact period ""For the Month Ended January 31, 2023."" The net income reported is $304,000.00.
+
+Details from the document include:
+- Revenue: $800,000.00
+- Cost of Revenue: -$220,000.00
+- Gross Profit: $580,000.00
+- Operating Expenses (Sales & Marketing + General & Administrative): -$200,000.00
+- Operating Income: $380,000.00
+- Income Before Tax: $380,000.00
+- Provision for Income Taxes (20%): -$76,000.00
+- Net Income: $304,000.00
+
+There is no ""(in thousands)"" notation, so the figures are reported as actual dollars.
+
+Therefore, the net income for Stellar Goods Inc. for the month ended January 31, 2023, was $304,000.
+
+<PDFNav>
+  {
+  ""documentId"": ""1d0ff815-ae64-4980-a24d-c2a6a0dc07ba"",
+  ""filename"": ""Income Statements - Jan.pdf"",
+  ""page"": 1,
+  ""context"": ""Income Statement showing detailed amounts and net income for the month ended January 31, 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | $304,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. (Income Statements - Jan.pdf)](https://stackifier.com/private/documents?id=1d0ff815-ae64-4980-a24d-c2a6a0dc07ba)","accuracy,single-doc,basic-fact",8.617721796035767,True,PASS,PASS,PASS,PASS,0.00043999999999999996,The AI correctly identified the net income and provided supporting details from the income statement. All numerical values are accurate and presented in the correct scale. The response is faithful to the provided document and directly answers the user's question.
+LOSS_MONTH_001,"What was the net income for Stellar Goods Inc. for the month ended May 31, 2023?","I found the income statement for Stellar Goods Inc. for the exact period ""For the Month Ended May 31, 2023."" The net income reported is -$10,000.00. 
+
+This means there was a net loss of $10,000 for May 2023.
+
+Details extracted from the document:
+- Revenue: $400,000.00
+- Cost of Revenue: -$220,000.00
+- Gross Profit: $180,000.00
+- Total Operating Expenses: -$190,000.00
+- Operating Income: -$10,000.00
+- Income Before Tax: -$10,000.00
+- Provision for Income Taxes (20%): $0.00
+- Net Income: -$10,000.00
+
+Since the amounts are already in full dollars (no ""(in thousands)"" notation mentioned), no scaling multiplication is needed.
+
+Please let me know if you want me to double-check the scaling or any other information from this statement.
+
+<PDFNav>
+  {
+  ""documentId"": ""43bdbf41-59d1-4b5d-937a-ca8c001f88bc"",
+  ""filename"": ""Income Statements - May.pdf"",
+  ""page"": 1,
+  ""context"": ""Income Statement section showing net income for the month ended May 31, 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | -$10,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. (Income Statements - May.pdf)](https://stackifier.com/private/documents?id=43bdbf41-59d1-4b5d-937a-ca8c001f88bc)","accuracy,single-doc,negative-value",15.71619176864624,True,PASS,PASS,PASS,PASS,0.000455,"The system accurately extracted the net income of -$10,000.00 and presented it clearly. It also provided supporting details from the income statement, confirming the accuracy of the numbers and the faithfulness of the response. The RAG system successfully retrieved the relevant document and information."
+GROSS_PROFIT_001,"What was the gross profit for Stellar Goods Inc. for the month ended April 30, 2023?","I have found the gross profit for Stellar Goods Inc. for the month ended April 30, 2023.
+
+The income statement shows:
+- Revenue: $600,000.00
+- Cost of Revenue: -$220,000.00 (indicating an expense)
+- Gross Profit: $380,000.00
+
+Since the document indicates amounts in actual dollars (no ""(in thousands)"" notation), no scaling is needed.
+
+Therefore, the gross profit for the month ended April 30, 2023, is $380,000.00.
+
+<PDFNav>
+  {
+  ""documentId"": ""92ecc5cf-30e9-4081-ae57-b367439a39c9"",
+  ""filename"": ""Income Statements - April.pdf"",
+  ""page"": 1,
+  ""context"": ""Shows the income statement with gross profit for the month ended April 30, 2023"",
+  ""highlight"": {
+    ""text"": ""Gross Profit | $380,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. (Income Statements - April.pdf)](https://stackifier.com/private/documents?id=92ecc5cf-30e9-4081-ae57-b367439a39c9)","accuracy,single-doc,basic-fact",8.795552015304565,True,PASS,PASS,PASS,PASS,0.00033125,"The system correctly identified the gross profit as $380,000.00, accurately extracted the revenue and cost of revenue, and correctly stated that no scaling was needed. The response is faithful to the provided information and directly answers the user's question."
+COST_OF_REVENUE_001,"What was the cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023?","The cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023, is reported as -$370,000.00 (in actual dollars as the document figure is already exact). This represents a cost (expense) of $370,000.
+
+Summary:
+- Period: For the Month Ended December 31, 2023
+- Cost of Revenue: $370,000 (expense)
+
+This data is extracted from the income statement titled ""Income Statements - Dec.pdf"" which includes the exact period phrase ""For the Month Ended December 31, 2023"".
+
+<PDFNav>
+  {
+  ""documentId"": ""6af8822d-5e43-4917-93b2-fca23aca6612"",
+  ""filename"": ""Income Statements - Dec.pdf"",
+  ""page"": 1,
+  ""context"": ""Income Statement showing the Cost of Revenue for December 31, 2023"",
+  ""highlight"": {
+    ""text"": ""Cost of Revenue | -$370,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. (Income Statements - Dec.pdf)](https://stackifier.com/private/documents?id=6af8822d-5e43-4917-93b2-fca23aca6612)","accuracy,single-doc,basic-fact",7.520044803619385,True,PASS,PASS,PASS,PASS,0.00035125000000000005,"The system accurately extracted the cost of revenue as -$370,000.00, correctly interpreting it as an expense of $370,000. The answer directly addresses the user's question and is fully supported by the provided source."
+COMPARISON_001,Compare the revenue between January 2023 and December 2023 for Stellar Goods Inc.,"I found the revenue figures for Stellar Goods Inc. for the exact months requested:
+
+- January 2023 revenue: $800,000.00  
+  (Source document shows ""For the Month Ended Jan 31, 2023"")
+
+- December 2023 revenue: $800,000.00  
+  (Source document shows ""For the Month Ended December 31, 2023"")
+
+Both months have the same revenue amount of $800,000.00.
+
+To summarize:
+
+| Period       | Revenue (USD) |
+|--------------|--------------:|
+| Jan 31, 2023 | $800,000      |
+| Dec 31, 2023 | $800,000      |
+
+There is no change in revenue between January 2023 and December 2023.
+
+---
+
+Details from extracted documents:
+
+**January 31, 2023 Income Statement extract:**
+
+| Metric | Amount |
+|---------|---------|
+| Revenue | $800,000.00 |
+
+**December 31, 2023 Income Statement extract:**
+
+| Metric | Amount |
+|---------|---------|
+| Revenue | $800,000.00 |
+
+---
+
+<PDFNav>
+  {
+  ""documentId"": ""1d0ff815-ae64-4980-a24d-c2a6a0dc07ba"",
+  ""filename"": ""Income Statements - Jan.pdf"",
+  ""page"": 1,
+  ""context"": ""Income statement showing revenue for Stellar Goods Inc. for January 2023"",
+  ""highlight"": {
+    ""text"": ""For the Month Ended Jan 31, 2023... Revenue $800,000.00""
+  }
+  }
+</PDFNav>
+
+<PDFNav>
+  {
+  ""documentId"": ""6af8822d-5e43-4917-93b2-fca23aca6612"",
+  ""filename"": ""Income Statements - Dec.pdf"",
+  ""page"": 1,
+  ""context"": ""Income statement showing revenue for Stellar Goods Inc. for December 2023"",
+  ""highlight"": {
+    ""text"": ""For the Month Ended December 31, 2023... Revenue $800,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:  
+[1. Income Statements - Jan.pdf](https://stackifier.com/private/documents?id=1d0ff815-ae64-4980-a24d-c2a6a0dc07ba)  
+[2. Income Statements - Dec.pdf](https://stackifier.com/private/documents?id=6af8822d-5e43-4917-93b2-fca23aca6612)","accuracy,multi-doc,comparison",13.52903413772583,True,PASS,PASS,PASS,PASS,0.0006825000000000001,"The system accurately extracted the revenue figures for both months and correctly compared them, directly answering the user's question. The response is fully supported by the provided document extracts."
+HIGHEST_REVENUE_001,Which month in 2023 had the highest revenue for Stellar Goods Inc.?,"I analyzed the monthly revenue data for Stellar Goods Inc. in 2023:
+
+- January: $800,000
+- February: $900,000
+- March: $500,000
+- April: $600,000
+- May: $400,000
+- June: $400,000
+- July: $350,000
+- August: $400,000
+- September: $500,000
+- October: $550,000
+- November: $620,000
+- December: $800,000
+
+The month with the highest revenue was February 2023, with a revenue of $900,000.
+
+If you want, I can provide details or charts for other months as well.
+
+Sources:
+[1. Income Statements - Feb.pdf](https://stackifier.com/private/documents?id=ccf0eb46-ac32-488a-b9e5-32f1df626b15)  
+[2. Income Statements - Jan.pdf](https://stackifier.com/private/documents?id=1d0ff815-ae64-4980-a24d-c2a6a0dc07ba)  
+[3. Income Statements - Dec.pdf](https://stackifier.com/private/documents?id=6af8822d-5e43-4917-93b2-fca23aca6612)  
+[4. Income Statements - Nov.pdf](https://stackifier.com/private/documents?id=e0bb68ae-2d9f-4528-84da-aef532ab7025)  
+[5. Income Statements - Oct.pdf](https://stackifier.com/private/documents?id=0aee928b-8196-43e7-ae95-d7895e313767)  
+[6. Income Statements - Sept.pdf](https://stackifier.com/private/documents?id=3dc1d19a-fd6e-4cae-9db0-523daa1941dc)  
+[7. Income Statements - Aug.pdf](https://stackifier.com/private/documents?id=112f42e5-23c0-4f48-b521-a350255ab737)  
+[8. Income Statements - July.pdf](https://stackifier.com/private/documents?id=ef9cf54f-916a-465b-929b-5d081618bc48)  
+[9. Income Statements - June.pdf](https://stackifier.com/private/documents?id=7fe6e65e-cc90-47e3-9f8a-8761de4a0466)  
+[10. Income Statements - May.pdf](https://stackifier.com/private/documents?id=43bdbf41-59d1-4b5d-937a-ca8c001f88bc)  
+[11. Income Statements - April.pdf](https://stackifier.com/private/documents?id=92ecc5cf-30e9-4081-ae57-b367439a39c9)","accuracy,multi-doc,max-value",37.07937002182007,True,PASS,PASS,PASS,PASS,0.00068875,"The AI correctly identified February 2023 as the month with the highest revenue and provided the accurate revenue figure. It also listed the revenue for all months in 2023, which were all correctly extracted from the provided sources. The response is faithful to the data and directly answers the user's question."
+LARGEST_LOSS_001,Which month in 2023 had the largest net loss for Stellar Goods Inc.?,"I found net income figures for multiple months in 2023 for Stellar Goods Inc.:
+
+- January 31, 2023: +$304,000
+- February 28, 2023: +$384,000
+- March 31, 2023: +$64,000
+- April 30, 2023: +$144,000
+- May 31, 2023: -$10,000
+- June 30, 2023: -$10,000
+- July 31, 2023: -$60,000
+- August 31, 2023: -$10,000
+- September 30, 2023: +$72,000
+- October 31, 2023: +$84,000
+- November 30, 2023: +$96,000
+- December 31, 2023: +$136,000
+
+The months with net losses are May, June, July, and August. Among these, July 2023 had the largest net loss of $60,000.
+
+Thus, the month in 2023 with the largest net loss for Stellar Goods Inc. is July 2023, with a net loss of $60,000.
+
+For your reference, here is the detailed net income and loss data highlighting the losses:
+
+| Month | Net Income/Loss (USD) |
+|-------|----------------------|
+| May 2023 | -$10,000 |
+| June 2023 | -$10,000 |
+| July 2023 | -$60,000 |
+| August 2023 | -$10,000 |
+
+Let me know if you need additional details from specific months.
+
+<PDFNav>
+  {
+  ""documentId"": ""43bdbf41-59d1-4b5d-937a-ca8c001f88bc"",
+  ""filename"": ""Income Statements - May.pdf"",
+  ""page"": 1,
+  ""context"": ""Net income of -$10,000 reported for May 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | -$10,000.00""
+  }
+  }
+</PDFNav>
+
+<PDFNav>
+  {
+  ""documentId"": ""7fe6e65e-cc90-47e3-9f8a-8761de4a0466"",
+  ""filename"": ""Income Statements - June.pdf"",
+  ""page"": 1,
+  ""context"": ""Net income of -$10,000 reported for June 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | -$10,000.00""
+  }
+  }
+</PDFNav>
+
+<PDFNav>
+  {
+  ""documentId"": ""ef9cf54f-916a-465b-929b-5d081618bc48"",
+  ""filename"": ""Income Statements - July.pdf"",
+  ""page"": 1,
+  ""context"": ""Largest net loss of -$60,000 reported for July 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | -$60,000.00""
+  }
+  }
+</PDFNav>
+
+<PDFNav>
+  {
+  ""documentId"": ""112f42e5-23c0-4f48-b521-a350255ab737"",
+  ""filename"": ""Income Statements - Aug.pdf"",
+  ""page"": 1,
+  ""context"": ""Net income of -$10,000 reported for August 2023"",
+  ""highlight"": {
+    ""text"": ""Net Income | -$10,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:
+[1. (Income Statements - July.pdf)](https://stackifier.com/private/documents?id=ef9cf54f-916a-465b-929b-5d081618bc48)","accuracy,multi-doc,negative-value",17.394266605377197,True,PASS,PASS,PASS,PASS,0.0008550000000000001,"The system correctly identified July 2023 as the month with the largest net loss and provided the accurate value of -$60,000. It also correctly listed all the months with net losses and their corresponding amounts. The numerical data extracted from the provided PDFNav links is accurate."
+Q1_REVENUE_001,"Calculate the total revenue for Q1 2023 (January, February, March) for Stellar Goods Inc.","I have the exact revenue figures for each month in Q1 2023 for Stellar Goods Inc.:
+- January 31, 2023: $800,000
+- February 28, 2023: $900,000
+- March 31, 2023: $500,000
+
+Now, I will calculate the total revenue for Q1 2023 by summing these amounts.","accuracy,multi-doc,aggregation",12.65152883529663,True,PASS,FAIL,PASS,FAIL,9.625e-05,"The system correctly identified and presented the monthly revenue figures. However, it failed to perform the final calculation and provide the total Q1 revenue as requested by the user. It stopped short of completing the task."
+OPERATING_EXPENSES_001,"What were the total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023?","I found the exact income statement for the period ""For the Month Ended November 30, 2023"" for Stellar Goods Inc.
+
+- Total Operating Expenses are listed as -$220,000.00.
+- The amounts are given in actual dollars, no additional scaling needed here.
+
+Therefore, the total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023, were $220,000.
+
+For reference and verification, here is the relevant section:
+
+| Description               | Amount       |
+|---------------------------|--------------|
+| Total Operating Expenses  | -$220,000.00 |
+
+This confirms the value is an expense of $220,000 for that month.
+
+<PDFNav>
+  {
+  ""documentId"": ""e0bb68ae-2d9f-4528-84da-aef532ab7025"",
+  ""filename"": ""Income Statements - Nov.pdf"",
+  ""page"": 1,
+  ""context"": ""Income statement showing total operating expenses for the month ended November 30, 2023"",
+  ""highlight"": {
+    ""text"": ""Total Operating Expenses | -$220,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:  
+[1. (Income Statements - Nov.pdf)](https://stackifier.com/private/documents?id=e0bb68ae-2d9f-4528-84da-aef532ab7025)","accuracy,single-doc,basic-fact",8.085256576538086,True,PASS,PASS,PASS,PASS,0.00042375000000000003,"The AI correctly identified the total operating expenses as -$220,000.00 and presented it as $220,000 in expenses, aligning with the expected answer. The numerical value and its interpretation as an expense are accurate. The AI successfully retrieved the information from the provided PDF and used it to construct a faithful and correct answer."
+GROSS_MARGIN_CALC_001,"Calculate the gross profit margin for Stellar Goods Inc. for the month ended February 28, 2023.","For the month ended February 28, 2023, the gross profit margin for Stellar Goods Inc. is calculated as follows:
+
+Gross Profit Margin = (Gross Profit / Revenue) × 100  
+= ($680,000 ÷ $900,000) × 100  
+= 75.56%
+
+Therefore, the gross profit margin is 75.56%.
+
+<PDFNav>
+  {
+  ""documentId"": ""ccf0eb46-ac32-488a-b9e5-32f1df626b15"",
+  ""filename"": ""Income Statements - Feb.pdf"",
+  ""page"": 1,
+  ""context"": ""This page contains the Income Statement for Stellar Goods Inc. for the month ended February 28, 2023, showing Revenue and Gross Profit values used to calculate the gross profit margin."",
+  ""highlight"": {
+    ""text"": ""For the Month Ended Feb 28, 2023 Revenue $900,000.00 Gross Profit $680,000.00""
+  }
+  }
+</PDFNav>
+
+Sources:  
+[1. (Income Statements - Feb.pdf)](https://stackifier.com/private/documents?id=ccf0eb46-ac32-488a-b9e5-32f1df626b15)","accuracy,calculation,single-doc",9.698683261871338,True,PASS,PASS,PASS,PASS,0.00033,"The system correctly identified the revenue and gross profit from the provided context, accurately calculated the gross profit margin, and presented the answer clearly. The PDF navigation also correctly points to the source of the information."
+PROFITABLE_MONTHS_001,How many months in 2023 did Stellar Goods Inc. have positive net income?,"I found the net income data for each month in 2023 for Stellar Goods Inc. as follows:
+
+- Jan 31, 2023: $304,000 (positive)
+- Feb 28, 2023: $384,000 (positive)
+- Mar 31, 2023: $64,000 (positive)
+- Apr 30, 2023: $144,000 (positive)
+- May 31, 2023: -$10,000 (negative)
+- Jun 30, 2023: -$10,000 (negative)
+- Jul 31, 2023: -$60,000 (negative)
+- Aug 31, 2023: -$10,000 (negative)
+- Sep 30, 2023: $72,000 (positive)
+- Oct 31, 2023: $84,000 (positive)
+- Nov 30, 2023: $96,000 (positive)
+- Dec 31, 2023: $136,000 (positive)
+
+Counting the months with positive net income:
+
+Jan, Feb, Mar, Apr, Sep, Oct, Nov, Dec
+
+This makes 8 months in 2023 with positive net income for Stellar Goods Inc.
+
+If you want, I can provide a chart visualization or detailed source references for each month.","accuracy,multi-doc,counting",8.619576692581177,True,PASS,PASS,PASS,PASS,0.00030375,"The AI correctly identified and counted the months with positive net income based on the provided monthly data. The numerical values for net income are presented accurately, and the final count matches the expected answer."

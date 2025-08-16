@@ -1,62 +1,74 @@
 [
   {
-    "test_id": "FACT_RETRIEVAL_001",
-    "question": "I need to find the exact net income figure for Stellar Goods Inc. for the specific month ending May 31, 2023. Please search the income statement or profit & loss statement for this specific period and provide the precise net income amount, making sure to handle any negative values correctly if it's a loss.",
-    "ideal_answer": "The net income for Stellar Goods Inc. in May 2023 was a loss of $10,000. The financial statement shows this as a negative value, indicating the company had a net loss for that month.",
+    "test_id": "REVENUE_001", 
+    "question": "What was the revenue for Stellar Goods Inc. for the month ended February 28, 2023?",
+    "ideal_answer": "The revenue for Stellar Goods Inc. for the month ended February 28, 2023 was $900,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "NET_INCOME_001",
+    "question": "What was the net income for Stellar Goods Inc. for the month ended January 31, 2023?", 
+    "ideal_answer": "The net income for Stellar Goods Inc. for the month ended January 31, 2023 was $304,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "LOSS_MONTH_001",
+    "question": "What was the net income for Stellar Goods Inc. for the month ended May 31, 2023?",
+    "ideal_answer": "The net income for Stellar Goods Inc. for the month ended May 31, 2023 was -$10,000.00, indicating a net loss of $10,000 for that month.",
     "tags": ["accuracy", "single-doc", "negative-value"]
   },
   {
-    "test_id": "NUMBER_SCALE_001",
-    "question": "What was the total revenue amount for Stellar Goods Inc. in the month ending October 31, 2023? Please find the income statement for this specific month and convert the revenue figure from thousands to actual dollars if needed.",
-    "ideal_answer": "The total revenue for Stellar Goods Inc. in October 2023 was $550,000. This figure comes from the income statement which shows revenue in thousands, so $550 thousand equals $550,000 in actual dollars.",
-    "tags": ["accuracy", "single-doc", "scaling"]
+    "test_id": "GROSS_PROFIT_001",
+    "question": "What was the gross profit for Stellar Goods Inc. for the month ended April 30, 2023?",
+    "ideal_answer": "The gross profit for Stellar Goods Inc. for the month ended April 30, 2023 was $380,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
   },
   {
-    "test_id": "MULTI_DOC_001",
-    "question": "I need to compare Stellar Goods Inc.'s monthly revenue between September 2023 and October 2023. Please find the income statements for both 'For the Month Ended September 30, 2023' and 'For the Month Ended October 31, 2023' and provide the exact revenue figures for comparison.",
-    "ideal_answer": "Comparing Stellar Goods Inc.'s monthly revenue: September 2023 had revenue of $500,000 while October 2023 had revenue of $550,000. This shows an increase of $50,000 or 10% growth from September to October.",
+    "test_id": "COST_OF_REVENUE_001",
+    "question": "What was the cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023?",
+    "ideal_answer": "The cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023 was -$370,000.00 (or $370,000.00 in expenses).",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "COMPARISON_001",
+    "question": "Compare the revenue between January 2023 and December 2023 for Stellar Goods Inc.",
+    "ideal_answer": "Stellar Goods Inc. had the same revenue in both months: January 2023 revenue was $800,000.00 and December 2023 revenue was also $800,000.00.",
     "tags": ["accuracy", "multi-doc", "comparison"]
   },
   {
-    "test_id": "CALCULATION_001",
-    "question": "Please find Stellar Goods Inc.'s income statement for the month ending April 30, 2023, extract the revenue and gross profit figures, and calculate the gross profit margin percentage. Make sure to convert from thousands to actual dollars before calculating.",
-    "ideal_answer": "For April 2023, Stellar Goods Inc. had revenue of $600,000 and gross profit of $380,000. The gross profit margin is 63.33%, calculated as ($380,000 ÷ $600,000) × 100 = 63.33%.",
-    "tags": ["accuracy", "calculation", "single-doc"]
+    "test_id": "HIGHEST_REVENUE_001",
+    "question": "Which month in 2023 had the highest revenue for Stellar Goods Inc.?",
+    "ideal_answer": "February 2023 had the highest revenue for Stellar Goods Inc. with $900,000.00.",
+    "tags": ["accuracy", "multi-doc", "max-value"]
   },
   {
-    "test_id": "AGGREGATION_001",
-    "question": "I need to calculate Stellar Goods Inc.'s total revenue for the third quarter of 2023 (Q3). Please find the income statements for July 31, 2023, August 31, 2023, and September 30, 2023, extract the revenue figures from each month, and sum them up to get the total Q3 revenue.",
-    "ideal_answer": "Stellar Goods Inc.'s total Q3 2023 revenue was $1,250,000. This is the sum of: July 2023: $350,000 + August 2023: $400,000 + September 2023: $500,000 = $1,250,000 total for the third quarter.",
+    "test_id": "LARGEST_LOSS_001", 
+    "question": "Which month in 2023 had the largest net loss for Stellar Goods Inc.?",
+    "ideal_answer": "July 2023 had the largest net loss for Stellar Goods Inc. with -$60,000.00.",
+    "tags": ["accuracy", "multi-doc", "negative-value"]
+  },
+  {
+    "test_id": "Q1_REVENUE_001",
+    "question": "Calculate the total revenue for Q1 2023 (January, February, March) for Stellar Goods Inc.",
+    "ideal_answer": "The total Q1 2023 revenue for Stellar Goods Inc. was $2,200,000.00, calculated as: January ($800,000.00) + February ($900,000.00) + March ($500,000.00) = $2,200,000.00.",
     "tags": ["accuracy", "multi-doc", "aggregation"]
   },
   {
-    "test_id": "NO_ANSWER_001",
-    "question": "Can you find information about Stellar Goods Inc.'s total operating expenses for any month in the year 2022? Please search thoroughly through all available financial documents.",
-    "ideal_answer": "I cannot find any information about Stellar Goods Inc.'s operating expenses for 2022 in the available documents. The financial documents I have access to do not contain data for the year 2022.",
-    "tags": ["no-answer", "robustness"]
+    "test_id": "OPERATING_EXPENSES_001",
+    "question": "What were the total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023?",
+    "ideal_answer": "The total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023 were -$220,000.00 (or $220,000.00 in expenses).", 
+    "tags": ["accuracy", "single-doc", "basic-fact"]
   },
   {
-    "test_id": "CHART_GEN_001",
-    "question": "Please find Stellar Goods Inc.'s financial data for the month ending December 31, 2023, extract the revenue, cost of revenue, and net income figures, and create a bar chart visualization showing these three key metrics. Make sure to convert from thousands to actual dollar amounts.",
-    "ideal_answer": "For December 2023, Stellar Goods Inc. had: Revenue: $800,000, Cost of Revenue: $370,000, and Net Income: $136,000. [Should include a bar chart visualization showing these three metrics in actual dollar amounts]",
-    "tags": ["charting", "tool-use"]
+    "test_id": "GROSS_MARGIN_CALC_001",
+    "question": "Calculate the gross profit margin for Stellar Goods Inc. for the month ended February 28, 2023.",
+    "ideal_answer": "The gross profit margin for February 2023 was 75.56%, calculated as: (Gross Profit $680,000.00 ÷ Revenue $900,000.00) × 100 = 75.56%.",
+    "tags": ["accuracy", "calculation", "single-doc"]
   },
   {
-    "test_id": "NEGATIVE_HANDLING_001",
-    "question": "I need the cost of revenue figure for Stellar Goods Inc. for the month ending March 31, 2023. Please find the income statement for this specific period and provide the exact cost of revenue amount, converting from thousands to actual dollars.",
-    "ideal_answer": "The cost of revenue for Stellar Goods Inc. in March 2023 was $220,000. This represents the direct costs associated with producing the company's goods or services for that month.",
-    "tags": ["accuracy", "single-doc", "negative-value"]
-  },
-  {
-    "test_id": "QUARTERLY_CALC_001",
-    "question": "I need to calculate the average monthly revenue for Stellar Goods Inc. during Q2 2023 (second quarter). Please find the income statements for April 30, 2023, May 31, 2023, and June 30, 2023, extract the revenue figures from each month, sum them up, and divide by 3 to get the average.",
-    "ideal_answer": "The average monthly revenue for Stellar Goods Inc. in Q2 2023 was $466,667. This is calculated from the quarterly total: April ($600,000) + May ($400,000) + June ($400,000) = $1,400,000 total ÷ 3 months = $466,667 average per month.",
-    "tags": ["accuracy", "multi-doc", "calculation", "aggregation"]
-  },
-  {
-    "test_id": "EXPENSE_BREAKDOWN_001",
-    "question": "Please find Stellar Goods Inc.'s income statement for the month ending August 31, 2023 and locate the total operating expenses figure. Make sure to convert from thousands to actual dollars and provide the exact amount.",
-    "ideal_answer": "The total operating expenses for Stellar Goods Inc. in August 2023 were $190,000. This figure represents the company's combined operational costs for that month, converted from the thousands format shown in the financial statements.",
-    "tags": ["accuracy", "single-doc", "expenses"]
+    "test_id": "PROFITABLE_MONTHS_001",
+    "question": "How many months in 2023 did Stellar Goods Inc. have positive net income?",
+    "ideal_answer": "Stellar Goods Inc. had positive net income in 8 months during 2023: January, February, March, April, September, October, November, and December.",
+    "tags": ["accuracy", "multi-doc", "counting"]
   }
 ]
