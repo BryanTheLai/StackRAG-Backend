@@ -10,6 +10,9 @@ Current configuration: OpenAI with gpt-4o model
 """
 
 import os
+import sys
+import asyncio
+import traceback
 from pydantic_ai import Agent
 # from pydantic_ai.models.google import GoogleModel
 # from pydantic_ai.providers.google import GoogleProvider
@@ -123,7 +126,6 @@ async def run_react_rag(
                 print(f"{message}")
                 yield message
     except Exception as e:
-        import traceback
         # Print full stack trace for debugging
         traceback.print_exc()
         print(f"[ERROR] run_react_rag exception: {repr(e)}", flush=True)
@@ -132,12 +134,6 @@ async def run_react_rag(
     print("[DEBUG] run_react_rag completed streaming", flush=True)
 
 if __name__ == '__main__':
-    import sys
-    import os
-    project_root = os.path.abspath(os.path.join(os.getcwd(), ".."))
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-    import asyncio
     # Ensure Supabase credentials and cast to str to satisfy type
     assert SUPABASE_URL and SUPABASE_KEY, "SUPABASE_URL and SUPABASE_KEY must be set"
     session = Session(user_id='test_user', token=str(SUPABASE_KEY))

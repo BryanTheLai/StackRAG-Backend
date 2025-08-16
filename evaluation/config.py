@@ -30,7 +30,7 @@ JUDGE_MODEL = "gemini/gemini-2.5-flash-lite"
 # --- Evaluation Prompts ---
 # Using f-strings for easy injection of variables
 CONTEXT_PRECISION_PROMPT = """
-You are an expert evaluator for a Retrieval-Augmented Generation (RAG) system. Your task is to determine if the provided context is relevant for answering the user's question.
+You are evaluating a financial RAG system. Your task is to determine if the retrieved context contains information that could help answer the user's financial question.
 
 User Question: "{question}"
 
@@ -39,40 +39,98 @@ Retrieved Context:
 {retrieved_context}
 ---
 
-Is the Retrieved Context relevant to the User Question?
-Answer with only a single word: YES or NO.
+Does the retrieved context contain relevant financial information that could help answer this question? Be lenient - even partial relevance counts.
+
+Answer with only: YES or NO
 """
 
 FAITHFULNESS_PROMPT = """
-You are an expert evaluator for a Retrieval-Augmented Generation (RAG) system. Your task is to determine if the generated answer is grounded in the provided context and does not introduce outside information (hallucinate).
+You are evaluating if an AI assistant stayed grounded in the provided context. Your task is to check if the answer uses information from the context without making up facts.
 
 Retrieved Context:
 ---
 {retrieved_context}
 ---
+
 Generated Answer:
 ---
 {generated_answer}
 ---
 
-Does the Generated Answer contain any information NOT present in the Retrieved Context?
-Answer with only a single word: YES or NO.
+Does the answer stick to information available in the context? It's OK if the answer is incomplete, as long as what's there is grounded. Allow reasonable interpretations and calculations based on the context.
+
+Answer with only: YES or NO
 """
 
 ANSWER_CORRECTNESS_PROMPT = """
-You are an expert evaluator for a financial AI assistant. Your task is to determine if the Generated Answer is a correct and complete response to the User Question, based on the Ideal Answer.
+You are evaluating a financial AI assistant's response quality. Compare the generated answer against the ideal answer to see if it delivers the core message correctly.
 
 User Question: "{question}"
 
-Ideal Answer (Ground Truth):
+What the answer should convey (Ideal Answer):
 ---
 {ideal_answer}
 ---
+
+What the AI actually answered:
+---
+{generated_answer}
+---
+
+Does the generated answer convey the same core financial information and message as the ideal answer? Focus on:
+- Key financial figures (allowing for minor formatting differences)
+- Main conclusions or insights
+- Overall helpfulness to the user
+
+Minor wording differences are fine. The goal is whether the user gets the right information.
+
+Answer with only: YES or NO
+"""
+
+# --- Comprehensive LLM Judge Prompts for JSON Output ---
+
+COMPREHENSIVE_EVALUATION_PROMPT = """
+You are a financial evaluation expert. Analyze the AI system's performance across multiple dimensions and provide a comprehensive JSON evaluation.
+
+User Question: "{question}"
+
+Expected Answer:
+---
+{ideal_answer}
+---
+
 Generated Answer:
 ---
 {generated_answer}
 ---
 
-Is the Generated Answer functionally correct and complete compared to the Ideal Answer? Minor differences in phrasing are acceptable, but key facts and numbers must be accurate.
-Answer with only a single word: YES or NO.
+Retrieved Context (if available):
+---
+{retrieved_context}
+---
+
+Evaluate the system performance across these dimensions:
+
+1. **Number Accuracy**: Are the numerical values (revenue, expenses, profits, etc.) extracted and reported correctly? Consider scaling (thousands vs actual amounts).
+
+2. **Answer Correctness**: Does the answer provide the right information to address the user's question? Focus on core message delivery.
+
+3. **Faithfulness**: Does the answer stick to information available in the retrieved context without hallucinating facts?
+
+4. **RAG Success**: Did the system successfully retrieve relevant information and generate a coherent response?
+
+For each metric, determine if it PASSES or FAILS based on these simple criteria:
+- PASS: The system performs adequately for this dimension
+- FAIL: The system has significant issues in this dimension
+
+Be logical and not overly strict. If the user asks for revenue and the system shows revenue (even with minor formatting differences), that should PASS.
+
+Respond with ONLY a JSON object in this exact format:
+{{
+  "number_accuracy": "PASS" or "FAIL",
+  "answer_correctness": "PASS" or "FAIL", 
+  "faithfulness": "PASS" or "FAIL",
+  "rag_success": "PASS" or "FAIL",
+  "explanation": "Brief explanation of the evaluation reasoning"
+}}
 """

@@ -1,7 +1,7 @@
 # Configuration for Gemini AI models and parameters
 
 # Default chat model for conversational interactions
-DEFAULT_CHAT_MODEL = "gpt-4.1-mini-2025-04-14"
+DEFAULT_CHAT_MODEL = "gpt-4.1-mini-2025-04-14" #"o4-mini-2025-04-16"
 
 # Model used for multimodal (PDF annotation) parsing
 MULTIMODAL_MODEL = "gpt-4.1-mini-2025-04-14"
