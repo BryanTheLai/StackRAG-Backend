@@ -12,3 +12,7 @@ google-genai==1.19.0        # Google GenAI SDK
 supabase==2.15.1            # Supabase client
 PyMuPDF==1.25.3             # PDF parsing
 chonkie[hub]==1.0.6         # miscellaneous utilities
+
+litellm
+matplotlib
+seaborn

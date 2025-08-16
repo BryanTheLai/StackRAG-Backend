@@ -1,0 +1,74 @@
+[
+  {
+    "test_id": "REVENUE_001", 
+    "question": "What was the revenue for Stellar Goods Inc. for the month ended February 28, 2023?",
+    "ideal_answer": "The revenue for Stellar Goods Inc. for the month ended February 28, 2023 was $900,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "NET_INCOME_001",
+    "question": "What was the net income for Stellar Goods Inc. for the month ended January 31, 2023?", 
+    "ideal_answer": "The net income for Stellar Goods Inc. for the month ended January 31, 2023 was $304,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "LOSS_MONTH_001",
+    "question": "What was the net income for Stellar Goods Inc. for the month ended May 31, 2023?",
+    "ideal_answer": "The net income for Stellar Goods Inc. for the month ended May 31, 2023 was -$10,000.00, indicating a net loss of $10,000 for that month.",
+    "tags": ["accuracy", "single-doc", "negative-value"]
+  },
+  {
+    "test_id": "GROSS_PROFIT_001",
+    "question": "What was the gross profit for Stellar Goods Inc. for the month ended April 30, 2023?",
+    "ideal_answer": "The gross profit for Stellar Goods Inc. for the month ended April 30, 2023 was $380,000.00.",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "COST_OF_REVENUE_001",
+    "question": "What was the cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023?",
+    "ideal_answer": "The cost of revenue for Stellar Goods Inc. for the month ended December 31, 2023 was -$370,000.00 (or $370,000.00 in expenses).",
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "COMPARISON_001",
+    "question": "Compare the revenue between January 2023 and December 2023 for Stellar Goods Inc.",
+    "ideal_answer": "Stellar Goods Inc. had the same revenue in both months: January 2023 revenue was $800,000.00 and December 2023 revenue was also $800,000.00.",
+    "tags": ["accuracy", "multi-doc", "comparison"]
+  },
+  {
+    "test_id": "HIGHEST_REVENUE_001",
+    "question": "Which month in 2023 had the highest revenue for Stellar Goods Inc.?",
+    "ideal_answer": "February 2023 had the highest revenue for Stellar Goods Inc. with $900,000.00.",
+    "tags": ["accuracy", "multi-doc", "max-value"]
+  },
+  {
+    "test_id": "LARGEST_LOSS_001", 
+    "question": "Which month in 2023 had the largest net loss for Stellar Goods Inc.?",
+    "ideal_answer": "July 2023 had the largest net loss for Stellar Goods Inc. with -$60,000.00.",
+    "tags": ["accuracy", "multi-doc", "negative-value"]
+  },
+  {
+    "test_id": "Q1_REVENUE_001",
+    "question": "Calculate the total revenue for Q1 2023 (January, February, March) for Stellar Goods Inc.",
+    "ideal_answer": "The total Q1 2023 revenue for Stellar Goods Inc. was $2,200,000.00, calculated as: January ($800,000.00) + February ($900,000.00) + March ($500,000.00) = $2,200,000.00.",
+    "tags": ["accuracy", "multi-doc", "aggregation"]
+  },
+  {
+    "test_id": "OPERATING_EXPENSES_001",
+    "question": "What were the total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023?",
+    "ideal_answer": "The total operating expenses for Stellar Goods Inc. for the month ended November 30, 2023 were -$220,000.00 (or $220,000.00 in expenses).", 
+    "tags": ["accuracy", "single-doc", "basic-fact"]
+  },
+  {
+    "test_id": "GROSS_MARGIN_CALC_001",
+    "question": "Calculate the gross profit margin for Stellar Goods Inc. for the month ended February 28, 2023.",
+    "ideal_answer": "The gross profit margin for February 2023 was 75.56%, calculated as: (Gross Profit $680,000.00 ÷ Revenue $900,000.00) × 100 = 75.56%.",
+    "tags": ["accuracy", "calculation", "single-doc"]
+  },
+  {
+    "test_id": "PROFITABLE_MONTHS_001",
+    "question": "How many months in 2023 did Stellar Goods Inc. have positive net income?",
+    "ideal_answer": "Stellar Goods Inc. had positive net income in 8 months during 2023: January, February, March, April, September, October, November, and December.",
+    "tags": ["accuracy", "multi-doc", "counting"]
+  }
+]
