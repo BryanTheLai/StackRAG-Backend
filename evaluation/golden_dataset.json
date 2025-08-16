@@ -1,0 +1,105 @@
+[
+  {
+    "test_id": "FACT_RETRIEVAL_001",
+    "question": "What was the net income for Stellar Goods Inc. in May 2023?",
+    "ideal_answer": "The net income for Stellar Goods Inc. in May 2023 was a loss of $10,000.",
+    "ground_truth_context": [
+      "For the Month Ended May 31, 2023",
+      "Net Income | -$10"
+    ],
+    "tags": ["accuracy", "single-doc", "negative-value"]
+  },
+  {
+    "test_id": "NUMBER_SCALE_001",
+    "question": "What was the total revenue in October 2023?",
+    "ideal_answer": "The total revenue in October 2023 was $550,000.",
+    "ground_truth_context": [
+      "For the Month Ended October 31, 2023",
+      "(in U.S. Dollars, thousands)",
+      "Revenue | $550"
+    ],
+    "tags": ["accuracy", "single-doc", "scaling"]
+  },
+  {
+    "test_id": "MULTI_DOC_001",
+    "question": "Compare the revenue for September and October 2023.",
+    "ideal_answer": "The revenue for September 2023 was $500,000 and for October 2023 it was $550,000.",
+    "ground_truth_context": [
+      "For the Month Ended September 30, 2023", "Revenue | $500",
+      "For the Month Ended October 31, 2023", "Revenue | $550"
+    ],
+    "tags": ["accuracy", "multi-doc", "comparison"]
+  },
+  {
+    "test_id": "CALCULATION_001",
+    "question": "Calculate the gross profit margin for April 2023.",
+    "ideal_answer": "The gross profit margin for April 2023 was approximately 63.33%. This is calculated by dividing the Gross Profit ($380,000) by the Revenue ($600,000).",
+    "ground_truth_context": [
+      "For the Month Ended April 30, 2023",
+      "Revenue | $600",
+      "Gross Profit | $380"
+    ],
+    "tags": ["accuracy", "calculation", "single-doc"]
+  },
+  {
+    "test_id": "AGGREGATION_001",
+    "question": "What was the total revenue for Q3 2023, covering July, August, and September?",
+    "ideal_answer": "The total revenue for Q3 2023 was $1,250,000, which is the sum of revenues from July ($350,000), August ($400,000), and September ($500,000).",
+    "ground_truth_context": [
+      "For the Month Ended July 31, 2023", "Revenue | $350",
+      "For the Month Ended August 31, 2023", "Revenue | $400",
+      "For the Month Ended September 30, 2023", "Revenue | $500"
+    ],
+    "tags": ["accuracy", "multi-doc", "aggregation"]
+  },
+  {
+    "test_id": "NO_ANSWER_001",
+    "question": "What were the total operating expenses in 2022?",
+    "ideal_answer": "I could not find any information regarding operating expenses for the year 2022 in the provided documents.",
+    "ground_truth_context": [],
+    "tags": ["no-answer", "robustness"]
+  },
+  {
+    "test_id": "CHART_GEN_001",
+    "question": "Show me a bar chart of revenue, cost of revenue, and net income for December 2023.",
+    "ideal_answer": "This is a qualitative check. The ideal answer should contain a valid <ChartData> block with type 'bar' and the correct data points for December 2023 (Revenue: 800000, Cost of Revenue: 370000, Net Income: 136000).",
+    "ground_truth_context": [
+      "For the Month Ended December 31, 2023",
+      "Revenue | $800",
+      "Cost of Revenue | -370",
+      "Net Income | $136"
+    ],
+    "tags": ["charting", "tool-use"]
+  },
+  {
+    "test_id": "NEGATIVE_HANDLING_001",
+    "question": "What was the cost of revenue for March 2023?",
+    "ideal_answer": "The cost of revenue for Stellar Goods Inc. in March 2023 was $220,000.",
+    "ground_truth_context": [
+      "For the Month Ended March 31, 2023",
+      "Cost of Revenue | -220"
+    ],
+    "tags": ["accuracy", "single-doc", "negative-value"]
+  },
+  {
+    "test_id": "QUARTERLY_CALC_001",
+    "question": "What was the average monthly revenue for Q2 2023?",
+    "ideal_answer": "The average monthly revenue for Q2 2023 was $466,667. This is calculated from April ($600,000), May ($400,000), and June ($400,000), totaling $1,400,000 divided by 3 months.",
+    "ground_truth_context": [
+      "For the Month Ended April 30, 2023", "Revenue | $600",
+      "For the Month Ended May 31, 2023", "Revenue | $400",
+      "For the Month Ended June 30, 2023", "Revenue | $400"
+    ],
+    "tags": ["accuracy", "multi-doc", "calculation", "aggregation"]
+  },
+  {
+    "test_id": "EXPENSE_BREAKDOWN_001",
+    "question": "What were the total operating expenses for August 2023?",
+    "ideal_answer": "The total operating expenses for August 2023 were $190,000.",
+    "ground_truth_context": [
+      "For the Month Ended August 31, 2023",
+      "Total Operating Expenses | -190"
+    ],
+    "tags": ["accuracy", "single-doc", "expenses"]
+  }
+]

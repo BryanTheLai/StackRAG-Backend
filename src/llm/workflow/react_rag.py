@@ -1,7 +1,20 @@
+"""
+RAG Agent Workflow with configurable AI providers.
+
+To switch between providers:
+1. Set USE_OPENAI = True for OpenAI (currently active)
+2. Set USE_OPENAI = False for Gemini (requires uncommenting Gemini imports and code)
+3. Modify OPENAI_MODEL_NAME to change the OpenAI model used
+
+Current configuration: OpenAI with gpt-4o model
+"""
+
 import os
 from pydantic_ai import Agent
-from pydantic_ai.models.google import GoogleModel
-from pydantic_ai.providers.google import GoogleProvider
+# from pydantic_ai.models.google import GoogleModel
+# from pydantic_ai.providers.google import GoogleProvider
+from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_core import to_jsonable_python
 from pydantic_ai.messages import ModelMessagesTypeAdapter  
 from supabase import create_client
@@ -12,8 +25,13 @@ from typing import AsyncGenerator, Any
 from src.llm.OpenAIClient import OpenAIClient
 from src.storage.SupabaseService import SupabaseService
 from src.prompts.prompt_manager import PromptManager
-from src.config.gemini_config import DEFAULT_CHAT_MODEL
+# from src.config.gemini_config import DEFAULT_CHAT_MODEL
+from src.config.openai_config import DEFAULT_CHAT_MODEL
 from datetime import datetime, timezone
+
+# Configuration for provider selection - Change this to switch providers
+USE_OPENAI = True  # Set to False to use Gemini instead
+OPENAI_MODEL_NAME = DEFAULT_CHAT_MODEL  # Can be "gpt-4", "gpt-4-turbo", "gpt-4o", etc.
 
 def create_system_prompt(**user_details):
     return PromptManager.get_prompt(
@@ -66,12 +84,24 @@ async def run_react_rag(
         user_id=user_id
     )
     calculator = PythonCalculationTool()
-    # Ensure GEMINI_API_KEY is set and retrieve directly for str type
-    if "GEMINI_API_KEY" not in os.environ:
-        raise EnvironmentError("GEMINI_API_KEY must be set as an environment variable")
-    gemini_key = os.environ["GEMINI_API_KEY"]
-    provider = GoogleProvider(api_key=gemini_key)
-    model = GoogleModel(DEFAULT_CHAT_MODEL, provider=provider)
+    # Model provider configuration
+    if USE_OPENAI:
+        # OpenAI Provider Configuration
+        if "OPENAI_API_KEY" not in os.environ:
+            raise EnvironmentError("OPENAI_API_KEY must be set as an environment variable")
+        openai_key = os.environ["OPENAI_API_KEY"]
+        provider = OpenAIProvider(api_key=openai_key)
+        model = OpenAIModel(OPENAI_MODEL_NAME, provider=provider)
+        print(f"[DEBUG] Using OpenAI model: {OPENAI_MODEL_NAME}")
+    else:
+        # Gemini Provider Configuration (commented out for now)
+        # if "GEMINI_API_KEY" not in os.environ:
+        #     raise EnvironmentError("GEMINI_API_KEY must be set as an environment variable")
+        # gemini_key = os.environ["GEMINI_API_KEY"]
+        # provider = GoogleProvider(api_key=gemini_key)
+        # model = GoogleModel(DEFAULT_CHAT_MODEL, provider=provider)
+        # print(f"[DEBUG] Using Gemini model: {DEFAULT_CHAT_MODEL}")
+        raise NotImplementedError("Gemini provider is currently disabled. Set USE_OPENAI=True to use OpenAI.")
 
     # ensure message_history is JSON serializable
     history_for_model = to_jsonable_python(message_history) if message_history else []  # use only user and assistant messages
