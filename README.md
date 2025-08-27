@@ -22,7 +22,7 @@
 
 ## 🚀 Overview
 
-Stackifier is a **production-ready RAG platform** engineered for financial document intelligence with **enterprise-grade accuracy**. The system combines a sophisticated **ETL ingestion pipeline** with a **ReAct-style conversational agent**, leveraging **multimodal LLMs**, **vector embeddings**, and a comprehensive **prompt library** to transform unstructured PDFs into **queryable knowledge**. Built on **FastAPI** with enterprise-grade **JWT authentication**, **row-level security policies**, and **containerized deployment architecture**.
+Stackifier is a **production-ready RAG platform** engineered for financial document intelligence. The system combines a sophisticated **ETL ingestion pipeline** with a **ReAct-style conversational agent**, leveraging **multimodal LLMs**, **vector embeddings**, and a comprehensive **prompt library** to transform unstructured PDFs into **queryable knowledge**. Built on **FastAPI** with enterprise-grade **JWT authentication**, **row-level security policies**, and **containerized deployment architecture**.
 
 ### 🏆 Proven Performance
 
