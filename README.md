@@ -26,7 +26,7 @@ Stackifier is a **production-ready RAG platform** engineered for financial docum
 
 ### 🏆 Proven Performance
 
-Our comprehensive evaluation demonstrates **production-ready accuracy** across critical financial metrics:
+Our comprehensive evaluation demonstrates **high accuracy** across critical financial metrics:
 
 - **🎯 100% Number Accuracy** - Perfect extraction of financial figures and calculations
 - **✅ 91.7% Answer Correctness** - High-quality, contextually accurate responses
@@ -41,14 +41,14 @@ Our comprehensive evaluation demonstrates **production-ready accuracy** across c
 
 **To understand and contribute to this project, developers should be familiar with:**
 
-- **Vector Mathematics & Information Retrieval**: Understanding similarity search algorithms, high-dimensional vector spaces, and semantic embedding techniques for document retrieval systems
-- **Advanced Python Patterns**: Object-oriented design principles, dependency injection, async/await patterns, and type-safe development with Pydantic
+- **Vector Retrieval**: Understanding similarity search algorithms, high-dimensional vector spaces, and semantic embedding techniques for document retrieval systems
+- **Object-oriented programming**: Object-oriented design principles, dependency injection, async/await patterns, and type-safe development with Pydantic
 - **Database Design & Optimization**: Relational schema normalization, PostgreSQL advanced features (RLS, RPC functions), and hybrid relational/document storage with JSONB
 - **Prompt Engineering & LLM Integration**: Dynamic prompt templating with Jinja2, structured output generation, and ReAct agent framework implementation
 - **Microservices Architecture**: Service decomposition, API design patterns, containerization strategies, and external service integration
 - **ETL Pipeline Design**: Data transformation workflows, fault-tolerant processing, and batch operations for unstructured data ingestion
 
-**By working with this codebase, developers will gain hands-on experience with:**
+**By working with this codebase, you will gain hands-on experience with:**
 - Production LLM application development using frameworks like `pydantic-ai`
 - Multi-modal AI processing for document analysis and structured data extraction  
 - Enterprise-grade security patterns including JWT authentication and row-level security
