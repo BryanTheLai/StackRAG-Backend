@@ -31,6 +31,7 @@ from src.prompts.prompt_manager import PromptManager
 from src.config.gemini_config import DEFAULT_CHAT_MODEL
 #from src.config.openai_config import DEFAULT_CHAT_MODEL
 from datetime import datetime, timezone
+from src.config.site import APP_DOMAIN
 
 # Configuration for provider selection - Change this to switch providers
 USE_OPENAI = True  # Set to False to use Gemini instead
@@ -39,7 +40,7 @@ OPENAI_MODEL_NAME = "gpt-4.1-mini-2025-04-14"  # Can be "gpt-4", "gpt-4-turbo", 
 def create_system_prompt(**user_details):
     return PromptManager.get_prompt(
         "chat_system_prompt",
-        APP_DOMAIN=user_details.get("APP_DOMAIN", "https://stackifier.com"),
+        APP_DOMAIN=user_details.get("APP_DOMAIN"),
         FULL_NAME=user_details.get("FULL_NAME", ""),
         COMPANY_NAME=user_details.get("COMPANY_NAME", ""),
         ROLE_IN_COMPANY=user_details.get("ROLE_IN_COMPANY", ""),
@@ -71,9 +72,10 @@ async def run_react_rag(
         profile_data = {}
     # debug profile_data
     print(f"[DEBUG] profile_data: {profile_data}")
-    # generate dynamic system prompt with current date
+    # generate dynamic system prompt with current date and configured domain
+    print(f"[DEBUG] Using APP_DOMAIN: {APP_DOMAIN}")
     system_prompt = create_system_prompt(
-        APP_DOMAIN="https://stackifier.com",
+        APP_DOMAIN=APP_DOMAIN,
         FULL_NAME=profile_data.get("full_name", ""),
         COMPANY_NAME=profile_data.get("company_name", ""),
         ROLE_IN_COMPANY=profile_data.get("role_in_company", ""),
