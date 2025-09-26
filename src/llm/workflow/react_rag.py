@@ -88,7 +88,7 @@ async def run_react_rag(
         supabase_service=SupabaseService(supabase_client=supabase_client),
         user_id=user_id
     )
-    calculator = PythonCalculationTool()
+    #calculator = PythonCalculationTool()
     # Model provider configuration
     if USE_OPENAI:
         # OpenAI Provider Configuration
@@ -114,7 +114,7 @@ async def run_react_rag(
     # Instantiate agent with keyword args to satisfy signature
     agent = Agent(
         model=model,
-        tools=[retrieval.retrieve_chunks, calculator.execute_python_calculations],
+        tools=[retrieval.retrieve_chunks], #calculator.execute_python_calculations],
         instructions=system_prompt,
         streaming=True,
         message_history=same_history_as_step_1

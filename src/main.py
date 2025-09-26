@@ -12,7 +12,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000", 
                    "http://localhost:5174","https://frontend-ai-cfo.vercel.app",
-                   "https://www.stackifier.com"
+                   "https://www.stackifier.com", "https://sme-chatbot.vercel.app"
                    ],
     allow_credentials=True,
     allow_methods=["*"],
