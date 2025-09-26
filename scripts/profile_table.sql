@@ -80,8 +80,19 @@ SET search_path = public -- CORRECTED: This is now a function property, without 
 AS $$
 BEGIN
   -- Insert a new row into public.profiles, setting the id to the new user's id.
-  INSERT INTO public.profiles (id)
-  VALUES (NEW.id);
+  -- Extract metadata from user signup if available
+  INSERT INTO public.profiles (
+    id,
+    full_name,
+    company_name,
+    role_in_company
+  )
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NULL),
+    COALESCE(NEW.raw_user_meta_data->>'company_name', NULL),
+    COALESCE(NEW.raw_user_meta_data->>'role_in_company', NULL)
+  );
   RETURN NEW;
 END;
 $$;
