@@ -56,12 +56,26 @@ class IngestionPipeline:
         print("IngestionPipeline initialized with all services.")
 
 
+    def _update_job_progress(self, job_id: Optional[uuid.UUID], status: str, step: str, progress: int):
+        """Helper to update processing job progress in database."""
+        if not job_id:
+            return
+        try:
+            self.supabase_service.client.table("processing_jobs").update({
+                "status": status,
+                "current_step": step,
+                "progress_percentage": progress
+            }).eq("id", str(job_id)).execute()
+        except Exception as e:
+            print(f"Warning: Failed to update job progress: {e}")
+
     async def run(
         self,
         pdf_file_buffer: IO[bytes],
         user_id: uuid.UUID,
         original_filename: str,
-        doc_type: str
+        doc_type: str,
+        job_id: Optional[uuid.UUID] = None
     ) -> PipelineResult:
         """
         Executes the full ingestion pipeline for a single document.
@@ -71,6 +85,7 @@ class IngestionPipeline:
             user_id: UUID of the authenticated user.
             original_filename: The original filename.
             doc_type: The file type ('pdf', etc.).
+            job_id: Optional processing job ID for progress updates.
 
         Returns:
             A dictionary indicating success or failure.
@@ -83,6 +98,7 @@ class IngestionPipeline:
         try:
             # --- Step 1: Parse PDF to Markdown ---
             print("\nStep 1: Parsing PDF to Markdown...")
+            self._update_job_progress(job_id, "parsing", "Reading PDF...", 15)
             parsing_result: ParsingResult = self.parser.parse_pdf_to_markdown(pdf_file_buffer)
             if parsing_result.get("error") or not parsing_result.get("markdown_content"):
                 error_msg = f"Parsing failed: {parsing_result.get('error', 'No markdown content generated.')}"
@@ -94,6 +110,7 @@ class IngestionPipeline:
 
             # --- Step 2: Extract Document Metadata ---
             print("\nStep 2: Extracting Document Metadata...")
+            self._update_job_progress(job_id, "extracting_metadata", "Analyzing content...", 25)
             markdown_snippet = combined_markdown
             metadata_result: FinancialDocumentMetadata = self.metadata_extractor.extract_metadata(markdown_snippet)
 
@@ -109,6 +126,7 @@ class IngestionPipeline:
             # --- Step 3: Upload Original PDF to Storage ---
             document_id_for_path = uuid.uuid4()
             print(f"\nStep 3: Uploading Original PDF (using temp ID for path: {document_id_for_path})...")
+            self._update_job_progress(job_id, "uploading", "Saving file...", 35)
             storage_path = self.supabase_service.upload_pdf_to_storage(
                 pdf_file_buffer=pdf_file_buffer,
                 user_id=user_id,
@@ -156,6 +174,7 @@ class IngestionPipeline:
 
             # --- Step 5: Section Markdown ---
             print("\nStep 5: Sectioning Markdown Content...")
+            self._update_job_progress(job_id, "sectioning", "Organizing content...", 50)
             sections_data = self.sectioner.section_markdown(
                 markdown_content=combined_markdown,
                 document_id=document_id,
@@ -191,6 +210,7 @@ class IngestionPipeline:
 
             # --- Step 7: Chunk Sections ---
             print("\nStep 7: Chunking Sections...")
+            self._update_job_progress(job_id, "chunking", "Preparing data...", 65)
             chunks_data = self.chunking_service.chunk_sections(
                 sections=sections_data,
                 document_metadata=document_metadata,
@@ -207,6 +227,7 @@ class IngestionPipeline:
 
             # --- Step 8: Generate Embeddings ---
             print("\nStep 8: Generating Embeddings...")
+            self._update_job_progress(job_id, "embedding", "Processing with AI...", 80)
             chunks_with_embeddings = self.embedding_service.generate_embeddings(chunks_data)
             if not chunks_with_embeddings or 'embedding' not in chunks_with_embeddings[0]:
                  error_msg = "Failed to generate embeddings or add them to chunk data."
@@ -218,6 +239,7 @@ class IngestionPipeline:
 
             # --- Step 9: Save Chunks Batch ---
             print("\nStep 9: Saving Chunks with Embeddings to Database...")
+            self._update_job_progress(job_id, "saving", "Finalizing...", 90)
             save_chunks_success = self.supabase_service.save_chunks_batch(chunks_with_embeddings)
 
             if not save_chunks_success:

@@ -81,17 +81,29 @@ AS $$
 BEGIN
   -- Insert a new row into public.profiles, setting the id to the new user's id.
   -- Extract metadata from user signup if available
+  -- Set default app settings with sensible defaults for new users
   INSERT INTO public.profiles (
     id,
     full_name,
     company_name,
-    role_in_company
+    role_in_company,
+    app_settings
   )
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NULL),
     COALESCE(NEW.raw_user_meta_data->>'company_name', NULL),
-    COALESCE(NEW.raw_user_meta_data->>'role_in_company', NULL)
+    COALESCE(NEW.raw_user_meta_data->>'role_in_company', NULL),
+    jsonb_build_object(
+      'theme', 'auto',
+      'currency', 'USD',
+      'dateFormat', 'MM/DD/YYYY',
+      'language', 'en',
+      'emailNotifications', true,
+      'processingNotifications', true,
+      'defaultDashboardView', 'monthly',
+      'chartType', 'bar'
+    )
   );
   RETURN NEW;
 END;
