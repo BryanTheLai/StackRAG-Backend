@@ -42,9 +42,9 @@ def convert_history_to_pydantic_ai_format(history: List[HistoryTurn]) -> list:
     for turn in history:
         parts = []
         for part_data in turn.parts:
-            if part_data.part_kind == "system-prompt" and part_data.content:
-                parts.append(SystemPromptPart(content=part_data.content))
-            elif part_data.part_kind == "user-prompt" and part_data.content:
+            # IMPORTANT: Do NOT forward any system prompts coming from the frontend.
+            # The backend constructs the system prompt for each request.
+            if part_data.part_kind == "user-prompt" and part_data.content:
                 parts.append(UserPromptPart(content=part_data.content))
             elif part_data.part_kind == "text" and part_data.content: # Model text response
                 parts.append(TextPart(content=part_data.content))
@@ -53,7 +53,7 @@ def convert_history_to_pydantic_ai_format(history: List[HistoryTurn]) -> list:
             continue
 
         if turn.kind == "request": # Corresponds to ModelRequest
-            # A ModelRequest can have system and user prompts together
+            # A ModelRequest includes user prompt (system prompt is injected server-side)
             pydantic_ai_history.append(ModelRequest(parts=parts))
         elif turn.kind == "response": # Corresponds to ModelResponse
             # A ModelResponse typically has one main part (TextPart, ToolCallPart)

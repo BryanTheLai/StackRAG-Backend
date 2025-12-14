@@ -53,7 +53,7 @@ async def run_react_rag(
     user_input: str,
     message_history: list = None
 ) -> AsyncGenerator[str, None]:
-    print(f"[DEBUG] run_react_rag called with session.user_id={session.user_id}, user_input={user_input}, history_len={(len(message_history) if message_history else 0)}")
+    print(f"[DEBUG] run_react_rag called (user_id={session.user_id}, history_len={(len(message_history) if message_history else 0)})")
     # authenticate on each call
     supabase_client.options.headers["Authorization"] = f"Bearer {session.token}"
     user_id = session.user_id
@@ -70,10 +70,7 @@ async def run_react_rag(
         profile_data = profile_resp.data or {}
     except Exception:
         profile_data = {}
-    # debug profile_data
-    print(f"[DEBUG] profile_data: {profile_data}")
     # generate dynamic system prompt with current date and configured domain
-    print(f"[DEBUG] Using APP_DOMAIN: {APP_DOMAIN}")
     system_prompt = create_system_prompt(
         APP_DOMAIN=APP_DOMAIN,
         FULL_NAME=profile_data.get("full_name", ""),
@@ -81,7 +78,6 @@ async def run_react_rag(
         ROLE_IN_COMPANY=profile_data.get("role_in_company", ""),
         CURRENT_DATE=current_date
     )
-    print(f"[DEBUG] system_prompt: {system_prompt}")
     # initialize tools
     retrieval = RetrievalService(
         openai_client=OpenAIClient(),
@@ -111,28 +107,24 @@ async def run_react_rag(
     history_for_model = to_jsonable_python(message_history) if message_history else []  # use only user and assistant messages
     same_history_as_step_1 = ModelMessagesTypeAdapter.validate_python(history_for_model)
 
-    # Instantiate agent with keyword args to satisfy signature
-    agent = Agent(
-        model=model,
-        tools=[retrieval.retrieve_chunks], #calculator.execute_python_calculations],
-        instructions=system_prompt,
-        streaming=True,
-        message_history=same_history_as_step_1
-    )
-
-    # stream and yield results incrementally with debug
     try:
-        async with agent.run_stream(user_input, message_history=same_history_as_step_1) as result:  
-            async for message in result.stream_text(delta=True):                  
-                print(f"{message}")
+        # Stream only model output text. The system prompt instructs the model
+        # not to narrate tool usage or internal steps.
+        agent = Agent(
+            model=model,
+            system_prompt=system_prompt,
+            tools=[retrieval.retrieve_chunks],
+            output_type=str,
+        )
+
+        async with agent.run_stream(user_input, message_history=same_history_as_step_1) as result:
+            async for message in result.stream_text(delta=True):
                 yield message
-    except Exception as e:
-        # Print full stack trace for debugging
+
+    except Exception:
+        # Keep errors user-friendly; stack trace is still printed server-side.
         traceback.print_exc()
-        print(f"[ERROR] run_react_rag exception: {repr(e)}", flush=True)
-        yield f"(Error in run_react_rag: {repr(e)})"
-        return
-    print("[DEBUG] run_react_rag completed streaming", flush=True)
+        yield "I encountered an error while generating a response. Please try again."
 
 if __name__ == '__main__':
     # Ensure Supabase credentials and cast to str to satisfy type

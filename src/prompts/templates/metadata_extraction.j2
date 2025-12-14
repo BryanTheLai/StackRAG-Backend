@@ -26,15 +26,12 @@ Do NOT nest these fields under a separate "income_statement_summary" object.
 - period_start_date: The start date of the reporting period (YYYY-MM-DD), if applicable. Should be `null` if not found.
 - period_end_date: The end date of the reporting period (YYYY-MM-DD), if applicable. Should be `null` if not found.
 
-If the `doc_specific_type` is identified as "Income Statement", you MUST attempt to extract values for ALL of the following fields and include them in the JSON response:
+ALWAYS attempt to extract values for ALL of the following fields when the information is present in the text, regardless of the chosen `doc_specific_type`:
 `total_revenue`, `net_income`, `total_expenses`, `currency`, `period_start_date`, `period_end_date`.
 - For `total_expenses`, if not explicitly stated, calculate it using the full scaled values of `total_revenue` and `net_income` if they are available.
-- If `total_revenue`, `net_income` (after attempting to find and scale them), or other financial figures for an income statement are genuinely not found or cannot be reliably extracted, their corresponding fields should be `null`.
-- Similarly, if `currency`, `period_start_date`, or `period_end_date` are not found, their fields should be `null`.
-Ensure these fields are always present in the JSON output for "Income Statement" types, even if their value is `null`.
+- If any of these values cannot be reliably extracted from the text snippet, set the field to `null`.
 
-If `doc_specific_type` is NOT "Income Statement", or if the specific information for these financial fields cannot be found,
-these fields should be `null` (or omitted, which will result in `null` as per the schema).
+This prevents downstream features (e.g., monthly income statement charts) from breaking just because `doc_specific_type` was misclassified.
 
 If a specific piece of information (like company name, date, year, quarter) is genuinely not found in the text snippet, 
 use an empty string "" for text fields, -1 for integer fields like year/quarter, and null or a 

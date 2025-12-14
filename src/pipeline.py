@@ -112,7 +112,12 @@ class IngestionPipeline:
             print("\nStep 2: Extracting Document Metadata...")
             self._update_job_progress(job_id, "extracting_metadata", "Analyzing content...", 25)
             markdown_snippet = combined_markdown
-            metadata_result: FinancialDocumentMetadata = self.metadata_extractor.extract_metadata(markdown_snippet)
+
+            metadata_result, metadata_rate_limited = self.metadata_extractor.extract_metadata(
+                markdown_snippet,
+                original_filename=original_filename,
+                forced_doc_specific_type=None,
+            )
 
             if not metadata_result:
                  error_msg = "Metadata extraction failed."
@@ -122,6 +127,58 @@ class IngestionPipeline:
             print("Metadata extraction successful.")
             print(f"  Extracted Type: {document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else 'None'}")
             print(f"  Extracted Company: {document_metadata.company_name}")
+            print(
+                "  Extracted Income Fields: "
+                f"revenue={getattr(document_metadata, 'total_revenue', None)} "
+                f"expenses={getattr(document_metadata, 'total_expenses', None)} "
+                f"net_income={getattr(document_metadata, 'net_income', None)} "
+                f"period_end_date={getattr(document_metadata, 'period_end_date', None)} "
+                f"currency={getattr(document_metadata, 'currency', None)}"
+            )
+
+            required_for_summary = {
+                "total_revenue": getattr(document_metadata, "total_revenue", None),
+                "total_expenses": getattr(document_metadata, "total_expenses", None),
+                "net_income": getattr(document_metadata, "net_income", None),
+                "period_end_date": getattr(document_metadata, "period_end_date", None),
+            }
+            missing_for_summary = [k for k, v in required_for_summary.items() if v is None]
+            if missing_for_summary and not metadata_rate_limited:
+                print(
+                    "Income statement required fields missing after metadata extraction: "
+                    f"{', '.join(missing_for_summary)}. Attempting focused LLM extraction for income fields..."
+                )
+                fields = self.metadata_extractor.extract_income_statement_fields(
+                    markdown_snippet,
+                    original_filename=original_filename,
+                )
+                if fields:
+                    for attr in [
+                        "total_revenue",
+                        "total_expenses",
+                        "net_income",
+                        "currency",
+                        "period_start_date",
+                        "period_end_date",
+                    ]:
+                        current_val = getattr(document_metadata, attr, None)
+                        new_val = getattr(fields, attr, None)
+                        if current_val is None and new_val is not None:
+                            setattr(document_metadata, attr, new_val)
+
+                    print(
+                        "  After second pass income fields: "
+                        f"revenue={getattr(document_metadata, 'total_revenue', None)} "
+                        f"expenses={getattr(document_metadata, 'total_expenses', None)} "
+                        f"net_income={getattr(document_metadata, 'net_income', None)} "
+                        f"period_end_date={getattr(document_metadata, 'period_end_date', None)} "
+                        f"currency={getattr(document_metadata, 'currency', None)}"
+                    )
+            elif missing_for_summary and metadata_rate_limited:
+                print(
+                    "Income statement required fields missing, but metadata extraction was quota-limited; "
+                    "skipping second-pass income field extraction to avoid extra quota burn."
+                )
 
             # --- Step 3: Upload Original PDF to Storage ---
             document_id_for_path = uuid.uuid4()
@@ -157,20 +214,35 @@ class IngestionPipeline:
                  return {"success": False, "message": error_msg}
             print(f"Document record saved successfully. Document ID: {document_id}")
 
-            # --- ADDED: Step 4.5: Save Income Statement Summary (if applicable) ---
-            if document_metadata.doc_specific_type == FinancialDocSpecificType.INCOME_STATEMENT:
-                print(f"\\nAttempting to save Income Statement Summary for document: {document_id} (Type: {document_metadata.doc_specific_type.value})...")
+            # --- Step 4.5: Save Income Statement Summary (when required fields are present) ---
+            required_for_summary = {
+                "total_revenue": getattr(document_metadata, "total_revenue", None),
+                "total_expenses": getattr(document_metadata, "total_expenses", None),
+                "net_income": getattr(document_metadata, "net_income", None),
+                "period_end_date": getattr(document_metadata, "period_end_date", None),
+            }
+            missing_for_summary = [k for k, v in required_for_summary.items() if v is None]
+
+            if missing_for_summary:
+                print(
+                    f"\nSkipping Income Statement Summary for document: {document_id} "
+                    f"(missing: {', '.join(missing_for_summary)}; doc_specific_type={document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else 'None'})."
+                )
+            else:
+                print(
+                    f"\nAttempting to save Income Statement Summary for document: {document_id} "
+                    f"(doc_specific_type={document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else 'None'})."
+                )
                 summary_id = self.supabase_service.save_income_statement_summary(
                     document_id=document_id,
                     user_id=user_id,
-                    metadata=document_metadata
+                    metadata=document_metadata,
                 )
                 if summary_id:
                     print(f"Income Statement Summary saved successfully. Summary ID: {summary_id}")
                 else:
-                    # Detailed error is logged within save_income_statement_summary method
                     print(f"Warning: Failed to save Income Statement Summary for document: {document_id}. Pipeline will continue.")
-            # --- End ADDED Step ---
+            # --- End Step ---
 
             # --- Step 5: Section Markdown ---
             print("\nStep 5: Sectioning Markdown Content...")
