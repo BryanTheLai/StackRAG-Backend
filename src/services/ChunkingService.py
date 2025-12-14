@@ -13,6 +13,11 @@ class ChunkingService:
         self.chunk_size = int(chunk_size)
         self.min_characters_per_chunk = int(min_characters_per_chunk)
 
+        if self.chunk_size <= 0:
+            raise ValueError("chunk_size must be > 0")
+        if self.min_characters_per_chunk < 0:
+            raise ValueError("min_characters_per_chunk must be >= 0")
+
     def _split_text(self, text: str) -> List[Tuple[int, int, str]]:
         if not text:
             return []

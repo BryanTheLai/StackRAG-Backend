@@ -5,6 +5,25 @@ from typing import Union, Optional
 from pydantic import BaseModel, Field
 from src.enums import FinancialDocSpecificType
 
+
+class IncomeStatementSummaryFields(BaseModel):
+    """Subset of fields used to populate income_statement_summaries."""
+
+    total_revenue: Optional[float] = Field(None, description="The total revenue for the period, if applicable.")
+    total_expenses: Optional[float] = Field(None, description="The total expenses for the period, if applicable.")
+    net_income: Optional[float] = Field(None, description="The net income (profit/loss) for the period, if applicable.")
+    currency: Optional[str] = Field(None, description="The 3-letter ISO currency code of the metrics, if applicable.")
+    period_start_date: Optional[str] = Field(
+        None,
+        description="The start date of the reporting period in YYYY-MM-DD format, if applicable.",
+        pattern="^\\d{4}-\\d{2}-\\d{2}$"
+    )
+    period_end_date: Optional[str] = Field(
+        None,
+        description="The end date of the reporting period in YYYY-MM-DD format, if applicable.",
+        pattern="^\\d{4}-\\d{2}-\\d{2}$"
+    )
+
 class FinancialDocumentMetadata(BaseModel):
     """
     Structured document metadata. Includes optional core metrics for income statements.

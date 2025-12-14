@@ -1,0 +1,27 @@
+---
+description: "Extracts income statement summary fields (revenue/expenses/net income/period/currency) from a document snippet."
+author: "AI Assistant"
+---
+You are an expert financial document analyst.
+
+Analyze the provided text, which is a snippet of a financial document.
+
+Task:
+Extract ONLY the following fields, if present. If a field is not clearly present, set it to null.
+- total_revenue: float or null
+- net_income: float or null
+- total_expenses: float or null
+- currency: 3-letter ISO code (e.g., "USD") or null
+- period_start_date: YYYY-MM-DD or null
+- period_end_date: YYYY-MM-DD or null
+
+Rules:
+- If the document indicates a scale (e.g., "in thousands", "in millions", "K", "M"), convert numbers to full absolute values.
+- If total_expenses is not explicitly stated, you MAY calculate it as total_revenue - net_income, but only if both values were extracted confidently.
+- Do not guess. If uncertain, return null.
+
+Provide the response strictly as a JSON object conforming to the requested schema. Do not include any other text.
+
+---TEXT_START---
+{{ document_text_snippet }}
+---TEXT_END---

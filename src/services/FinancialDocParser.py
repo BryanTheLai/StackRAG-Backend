@@ -1,7 +1,15 @@
 # src/services/FinancialDocParser.py
 
 import time
-import pymupdf
+try:
+    import fitz as pymupdf  # type: ignore[import-not-found]  # PyMuPDF canonical import
+except Exception:  # pragma: no cover
+    import pymupdf  # type: ignore[import-not-found]
+
+try:  # pragma: no cover
+    _PYMUPDF_FILE_DATA_ERROR = pymupdf.FileDataError  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover
+    _PYMUPDF_FILE_DATA_ERROR = None
 import concurrent.futures
 from typing import Optional, Dict, Any, IO
 from google.genai import types
@@ -93,7 +101,7 @@ class FinancialDocParser:
 
             results.sort(key=lambda x: x[0])
 
-            if any("RESOURCE_EXHAUSTED" in t or "Quota exceeded" in t for _, t in results):
+            if any(("resource_exhausted" in (t or "").lower()) or ("quota exceeded" in (t or "").lower()) for _, t in results):
                 combined_markdown = self._extract_text_fallback(pdf_document)
                 return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
@@ -105,11 +113,11 @@ class FinancialDocParser:
 
             return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
-        except pymupdf.pymupdf.FileDataError:
-             error_msg = "Error: Could not open PDF file from buffer. File may be corrupt or not a PDF."
-             print(error_msg)
-             return {"markdown_content": None, "page_count": 0, "error": error_msg}
         except Exception as e:
+            if _PYMUPDF_FILE_DATA_ERROR is not None and isinstance(e, _PYMUPDF_FILE_DATA_ERROR):
+                error_msg = "Error: Could not open PDF file from buffer. File may be corrupt or not a PDF."
+                print(error_msg)
+                return {"markdown_content": None, "page_count": 0, "error": error_msg}
             error_msg = f"An unexpected error occurred during PDF parsing: {str(e)}"
             print(error_msg)
             return {"markdown_content": None, "page_count": 0, "error": error_msg}
