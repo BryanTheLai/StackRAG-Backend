@@ -24,7 +24,7 @@ class GeminiClient:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY not found in environment variables.")
         
-        print(f"Initializing Gemini client with API key: {self.api_key[:3]}...{self.api_key[-2:]}")
+        print("Initializing Gemini client")
         self.client = genai.Client(api_key=self.api_key)
         self.chat = None
         self.config = config

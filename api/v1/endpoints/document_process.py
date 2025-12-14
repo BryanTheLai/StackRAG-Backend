@@ -2,6 +2,11 @@ from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status,
 from typing import Dict, Any, Optional
 import uuid
 import io
+import os
+import re
+import asyncio
+import random
+import logging
 
 from ..dependencies import Session, get_session, SUPABASE_URL, SUPABASE_KEY
 from supabase import create_client
@@ -9,6 +14,30 @@ from src.pipeline import IngestionPipeline
 from src.storage.SupabaseService import SupabaseService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
+
+logger = logging.getLogger("uvicorn.error")
+
+
+# Throttle concurrent ingestion jobs (helps avoid Gemini quota/rate bursts)
+_MAX_CONCURRENT_INGESTIONS = int(os.getenv("MAX_CONCURRENT_INGESTIONS", "2"))
+_INGESTION_SEMAPHORE = asyncio.Semaphore(_MAX_CONCURRENT_INGESTIONS)
+
+
+def _parse_retry_after_seconds(error_text: str) -> Optional[float]:
+    """Best-effort extraction of server-provided retry delays from Gemini errors."""
+    if not error_text:
+        return None
+
+    # Examples we may see:
+    # - "Please retry in 41.466s."
+    # - "'retryDelay': '41s'"
+    m = re.search(r"retry in\s+(\d+(?:\.\d+)?)s", error_text, flags=re.IGNORECASE)
+    if m:
+        return float(m.group(1))
+    m = re.search(r"retryDelay\s*['\"]?\s*[:=]\s*['\"]?(\d+(?:\.\d+)?)s", error_text, flags=re.IGNORECASE)
+    if m:
+        return float(m.group(1))
+    return None
 
 
 def _get_user_friendly_error(exception_str: str) -> tuple[str, str]:
@@ -22,8 +51,14 @@ def _get_user_friendly_error(exception_str: str) -> tuple[str, str]:
     if "401" in exception_str or "invalid_api_key" in error_lower or "incorrect api key" in error_lower:
         return ("AI service temporarily unavailable. Please try again later or contact support.", "api_key_invalid")
     
-    # OpenAI rate limit
-    if "429" in exception_str or "rate_limit" in error_lower:
+    # Rate limit / quota exhaustion
+    if "429" in exception_str or "rate_limit" in error_lower or "resource_exhausted" in error_lower or "quota" in error_lower:
+        # Gemini free-tier commonly returns RESOURCE_EXHAUSTED. Make this explicit.
+        if "resource_exhausted" in error_lower or "quota" in error_lower:
+            return (
+                "Upload rate limit reached while processing this PDF. Please wait a bit and retry, or upload fewer files at once.",
+                "quota_exhausted",
+            )
         return ("Service is busy. Please wait a moment and try again.", "rate_limit")
     
     # File parsing errors
@@ -57,8 +92,19 @@ async def _process_document_background(
     """Background task to process document and update job status."""
     supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
     supabase_client.options.headers["Authorization"] = f"Bearer {token}"
+    acquired = False
     
     try:
+        await _INGESTION_SEMAPHORE.acquire()
+        acquired = True
+
+        logger.info(
+            "processing_job_start job_id=%s filename=%s max_concurrent=%s",
+            str(job_id),
+            filename,
+            _MAX_CONCURRENT_INGESTIONS,
+        )
+
         # Update to parsing status
         supabase_client.table("processing_jobs").update({
             "status": "parsing",
@@ -73,16 +119,79 @@ async def _process_document_background(
         supabase_service = SupabaseService(supabase_client)
         pipeline = IngestionPipeline(supabase_service=supabase_service)
         
-        # Run pipeline with progress updates
-        result = await pipeline.run(
-            pdf_file_buffer=file_buffer,
-            user_id=user_id,
-            original_filename=filename,
-            doc_type=doc_type,
-            job_id=job_id  # Pass job_id for progress updates
-        )
+        # Run pipeline with limited retries for transient quota bursts.
+        max_attempts = int(os.getenv("DOCUMENT_PROCESS_MAX_ATTEMPTS", "3"))
+        last_result: Optional[Dict[str, Any]] = None
+        last_error: Optional[Exception] = None
+
+        for attempt in range(1, max_attempts + 1):
+            try:
+                logger.info(
+                    "processing_job_attempt job_id=%s filename=%s attempt=%s/%s",
+                    str(job_id),
+                    filename,
+                    attempt,
+                    max_attempts,
+                )
+                last_result = await pipeline.run(
+                    pdf_file_buffer=file_buffer,
+                    user_id=user_id,
+                    original_filename=filename,
+                    doc_type=doc_type,
+                    job_id=job_id  # Pass job_id for progress updates
+                )
+
+                # If the pipeline itself reports a failure, decide if it's retryable.
+                if last_result.get("success"):
+                    break
+
+                msg = str(last_result.get("message", ""))
+                is_retryable = ("429" in msg) or ("resource_exhausted" in msg.lower()) or ("rate limit" in msg.lower())
+                if not is_retryable or attempt >= max_attempts:
+                    break
+
+                retry_after = _parse_retry_after_seconds(msg)
+                sleep_s = retry_after if retry_after is not None else min(2 ** attempt, 30)
+                sleep_s += random.uniform(0, 0.5)
+                supabase_client.table("processing_jobs").update({
+                    "status": "parsing",
+                    "current_step": f"Rate limited. Retrying (attempt {attempt + 1}/{max_attempts})...",
+                    "progress_percentage": 10
+                }).eq("id", str(job_id)).execute()
+                await asyncio.sleep(sleep_s)
+                file_buffer.seek(0)
+
+            except Exception as e:
+                last_error = e
+                msg = str(e)
+                is_retryable = ("429" in msg) or ("resource_exhausted" in msg.lower()) or ("rate limit" in msg.lower())
+                if not is_retryable or attempt >= max_attempts:
+                    break
+                retry_after = _parse_retry_after_seconds(msg)
+                sleep_s = retry_after if retry_after is not None else min(2 ** attempt, 30)
+                sleep_s += random.uniform(0, 0.5)
+                logger.warning(
+                    "processing_job_retry job_id=%s filename=%s sleep_s=%.2f reason=%s",
+                    str(job_id),
+                    filename,
+                    sleep_s,
+                    ("quota" if "resource_exhausted" in msg.lower() else "rate_limit"),
+                )
+                await asyncio.sleep(sleep_s)
+                file_buffer.seek(0)
+
+        if last_result is None and last_error is not None:
+            raise last_error
+
+        result = last_result or {"success": False, "message": "Unknown processing error"}
         
         if result.get("success"):
+            logger.info(
+                "processing_job_success job_id=%s filename=%s document_id=%s",
+                str(job_id),
+                filename,
+                str(result.get("document_id")) if result.get("document_id") else None,
+            )
             # Convert UUID to string for JSON serialization
             result_data = {
                 "success": result.get("success"),
@@ -103,6 +212,12 @@ async def _process_document_background(
         else:
             # Mark as failed with user-friendly error
             user_error, error_code = _get_user_friendly_error(result.get("message", ""))
+            logger.error(
+                "processing_job_failed job_id=%s filename=%s error_code=%s",
+                str(job_id),
+                filename,
+                error_code,
+            )
             supabase_client.table("processing_jobs").update({
                 "status": "failed",
                 "error_message": user_error,
@@ -115,7 +230,11 @@ async def _process_document_background(
         error_str = str(e)
         user_error, error_code = _get_user_friendly_error(error_str)
         
-        print(f"[ERROR] Background processing failed for job {job_id}: {error_str}")
+        logger.exception(
+            "processing_job_exception job_id=%s filename=%s",
+            str(job_id),
+            filename,
+        )
         
         try:
             supabase_client.table("processing_jobs").update({
@@ -127,6 +246,12 @@ async def _process_document_background(
         except:
             pass  # If we can't even update the status, log it
             print(f"[ERROR] Failed to update job status for {job_id}")
+    finally:
+        if acquired:
+            try:
+                _INGESTION_SEMAPHORE.release()
+            except Exception:
+                pass
 
 
 @router.post("/process", response_model=Dict[str, Any])
@@ -171,6 +296,12 @@ async def process_document(
     try:
         # Create processing job record
         job_id = uuid.uuid4()
+        logger.info(
+            "process_document_received job_id=%s filename=%s size_bytes=%s",
+            str(job_id),
+            file.filename,
+            len(file_content),
+        )
         job_data = {
             "id": str(job_id),
             "user_id": session.user_id,

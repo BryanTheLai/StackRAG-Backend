@@ -112,16 +112,40 @@ class IngestionPipeline:
             print("\nStep 2: Extracting Document Metadata...")
             self._update_job_progress(job_id, "extracting_metadata", "Analyzing content...", 25)
             markdown_snippet = combined_markdown
-            metadata_result: FinancialDocumentMetadata = self.metadata_extractor.extract_metadata(markdown_snippet)
+
+            filename_lower = (original_filename or "").lower()
+            forced_doc_specific_type = None
+            if any(k in filename_lower for k in ["income statement", "income statements", "profit & loss", "profit and loss", "p&l"]):
+                forced_doc_specific_type = FinancialDocSpecificType.INCOME_STATEMENT
+
+            metadata_result: FinancialDocumentMetadata = self.metadata_extractor.extract_metadata(
+                markdown_snippet,
+                original_filename=original_filename,
+                forced_doc_specific_type=forced_doc_specific_type,
+            )
 
             if not metadata_result:
                  error_msg = "Metadata extraction failed."
                  print(error_msg)
                  return {"success": False, "message": error_msg}
             document_metadata: FinancialDocumentMetadata = metadata_result
+            if forced_doc_specific_type and document_metadata.doc_specific_type != forced_doc_specific_type:
+                print(
+                    f"Warning: Overriding extracted doc_specific_type '{getattr(document_metadata.doc_specific_type, 'value', document_metadata.doc_specific_type)}' "
+                    f"with '{forced_doc_specific_type.value}' based on filename: {original_filename}"
+                )
+                document_metadata.doc_specific_type = forced_doc_specific_type
             print("Metadata extraction successful.")
             print(f"  Extracted Type: {document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else 'None'}")
             print(f"  Extracted Company: {document_metadata.company_name}")
+            print(
+                "  Extracted Income Fields: "
+                f"revenue={getattr(document_metadata, 'total_revenue', None)} "
+                f"expenses={getattr(document_metadata, 'total_expenses', None)} "
+                f"net_income={getattr(document_metadata, 'net_income', None)} "
+                f"period_end_date={getattr(document_metadata, 'period_end_date', None)} "
+                f"currency={getattr(document_metadata, 'currency', None)}"
+            )
 
             # --- Step 3: Upload Original PDF to Storage ---
             document_id_for_path = uuid.uuid4()
@@ -157,9 +181,15 @@ class IngestionPipeline:
                  return {"success": False, "message": error_msg}
             print(f"Document record saved successfully. Document ID: {document_id}")
 
-            # --- ADDED: Step 4.5: Save Income Statement Summary (if applicable) ---
-            if document_metadata.doc_specific_type == FinancialDocSpecificType.INCOME_STATEMENT:
-                print(f"\\nAttempting to save Income Statement Summary for document: {document_id} (Type: {document_metadata.doc_specific_type.value})...")
+            # --- Step 4.5: Save Income Statement Summary (if applicable) ---
+            should_attempt_income_summary = document_metadata.doc_specific_type == FinancialDocSpecificType.INCOME_STATEMENT
+            if not should_attempt_income_summary:
+                print(
+                    f"\nSkipping Income Statement Summary for document: {document_id} "
+                    f"(doc_specific_type={document_metadata.doc_specific_type.value if document_metadata.doc_specific_type else 'None'})."
+                )
+            else:
+                print(f"\nAttempting to save Income Statement Summary for document: {document_id} (Type: {document_metadata.doc_specific_type.value})...")
                 summary_id = self.supabase_service.save_income_statement_summary(
                     document_id=document_id,
                     user_id=user_id,
@@ -170,7 +200,7 @@ class IngestionPipeline:
                 else:
                     # Detailed error is logged within save_income_statement_summary method
                     print(f"Warning: Failed to save Income Statement Summary for document: {document_id}. Pipeline will continue.")
-            # --- End ADDED Step ---
+            # --- End Step ---
 
             # --- Step 5: Section Markdown ---
             print("\nStep 5: Sectioning Markdown Content...")

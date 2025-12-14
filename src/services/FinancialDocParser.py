@@ -9,6 +9,7 @@ from src.llm.GeminiClient import GeminiClient
 from src.prompts.prompt_manager import PromptManager
 import re
 from src.config.gemini_config import MULTIMODAL_MODEL
+import os
 
 from src.models.ingestion_models import ParsingResult
 
@@ -48,10 +49,16 @@ class FinancialDocParser:
             total_pages = len(pdf_document)
             print(f"PDF has {total_pages} pages")
 
+            disable_gemini_annotation = os.getenv("DISABLE_GEMINI_PDF_ANNOTATION", "0") == "1"
+
             if total_pages == 0:
                  if pdf_document:
                     pdf_document.close()
                  return {"markdown_content": "", "page_count": 0, "error": "PDF has no pages."}
+
+            if disable_gemini_annotation:
+                combined_markdown = self._extract_text_fallback(pdf_document)
+                return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
             pages_data = []
             for page_num in range(total_pages):
@@ -84,7 +91,11 @@ class FinancialDocParser:
                     results.append((page_num, f"\n\n[FATAL ERROR processing Page {page_num+1}: {exc}]\n\n"))
 
 
-            results.sort(key=lambda x: x)
+            results.sort(key=lambda x: x[0])
+
+            if any("RESOURCE_EXHAUSTED" in t or "Quota exceeded" in t for _, t in results):
+                combined_markdown = self._extract_text_fallback(pdf_document)
+                return {"markdown_content": combined_markdown.strip(), "page_count": total_pages, "error": None}
 
             combined_markdown = ""
             for page_num, markdown_text in results:
@@ -158,7 +169,8 @@ class FinancialDocParser:
 
             except Exception as e:
                 error_details = str(e)
-                is_retryable = "429" in error_details or "503" in error_details or "rate limit" in error_details.lower()
+                is_quota_exhausted = "resource_exhausted" in error_details.lower() or "quota exceeded" in error_details.lower()
+                is_retryable = ("429" in error_details or "503" in error_details or "rate limit" in error_details.lower()) and not is_quota_exhausted
 
                 if is_retryable and attempt < max_retries:
                     print(f"{page_identifier}: Retryable error: {error_details}... Retrying in {retry_delay}s")
@@ -170,3 +182,14 @@ class FinancialDocParser:
 
         print(f"{page_identifier}: Loop finished unexpectedly without returning.")
         return f"[Error: Unknown issue processing {page_identifier} after loop.]"
+
+    def _extract_text_fallback(self, pdf_document: pymupdf.Document) -> str:
+        parts: list[str] = []
+        total_pages = len(pdf_document)
+        for page_num in range(total_pages):
+            page = pdf_document[page_num]
+            text = (page.get_text("text") or "").strip()
+            start_separator = f"\n\n--- Page {page_num+1} Start ---\n\n"
+            end_separator = f"\n\n--- Page {page_num+1} End ---\n\n"
+            parts.append(start_separator + (text if text else "[No extractable text on this page]") + end_separator)
+        return "".join(parts)
