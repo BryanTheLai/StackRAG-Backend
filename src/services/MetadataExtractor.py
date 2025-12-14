@@ -48,28 +48,7 @@ class MetadataExtractor:
         )
 
         print("Sending text snippet to LLM for structured metadata extraction…")
-        try:
-            response = self.gemini_client.client.models.generate_content(
-                model=self.text_model,
-                contents=[formatted_prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_schema=FinancialDocumentMetadata
-                )
-            )
-
-            extracted_metadata: FinancialDocumentMetadata = response.parsed
-            if extracted_metadata:
-                print("Structured metadata extraction attempted.")
-                return extracted_metadata, False
-        except Exception as e:
-            error_text = str(e)
-            is_quota = "resource_exhausted" in error_text.lower() or "quota exceeded" in error_text.lower() or "429" in error_text
-            if not is_quota:
-                raise
-
-        print("Metadata extraction rate-limited (quota). Returning empty metadata (UNKNOWN).")
-        return FinancialDocumentMetadata(
+        empty_metadata = FinancialDocumentMetadata(
             doc_specific_type=FinancialDocSpecificType.UNKNOWN,
             company_name="",
             report_date=None,
@@ -82,7 +61,35 @@ class MetadataExtractor:
             currency=None,
             period_start_date=None,
             period_end_date=None,
-        ), True
+        )
+        try:
+            response = self.gemini_client.client.models.generate_content(
+                model=self.text_model,
+                contents=[formatted_prompt],
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=FinancialDocumentMetadata
+                )
+            )
+
+            extracted_metadata: FinancialDocumentMetadata = response.parsed
+            if extracted_metadata is not None:
+                print("Structured metadata extraction attempted.")
+                return extracted_metadata, False
+
+            print(
+                "Metadata extraction returned an empty/invalid parsed response (not quota-limited). "
+                "Returning empty metadata (UNKNOWN)."
+            )
+            return empty_metadata, False
+        except Exception as e:
+            error_text = str(e)
+            is_quota = "resource_exhausted" in error_text.lower() or "quota exceeded" in error_text.lower() or "429" in error_text
+            if not is_quota:
+                raise
+
+        print("Metadata extraction rate-limited (quota). Returning empty metadata (UNKNOWN).")
+        return empty_metadata, True
 
     def extract_income_statement_fields(
         self,
