@@ -17,16 +17,17 @@ class OpenAIClient:
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables. Please check your .env file.")
 
+        self.base_url = os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENAI_API_BASE")
+
         # Initialize the OpenAI client
-        self.client = OpenAI(
-            api_key=self.api_key,
-            # base_url="https://api.fireworks.ai/inference/v1",
-        )
+        client_kwargs = {"api_key": self.api_key}
+        if self.base_url:
+            client_kwargs["base_url"] = self.base_url.rstrip("/")
 
-        # Define the default embedding model
-        self.embedding_model = EMBEDDING_MODEL # Or "nomic-ai/nomic-embed-text-v1.5" if using Fireworks base_url
+        self.client = OpenAI(**client_kwargs)
 
-        print(f"Initialized OpenAI client with model: {self.embedding_model}")
+        self.embedding_model = os.environ.get("OPENAI_EMBEDDING_MODEL", EMBEDDING_MODEL)
+
 
 
     def get_embeddings(self, texts: List[str]) -> List[List[float]]:

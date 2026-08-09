@@ -54,16 +54,17 @@ class EmbeddingService:
             embeddings_result = self.openai_client.get_embeddings(texts_to_embed)
 
             if len(embeddings_result) != len(texts_to_embed):
-                 print(f"Warning: Embedding API returned {len(embeddings_result)} embeddings for {len(texts_to_embed)} texts. Expected count mismatch.")
+                raise ValueError(
+                    f"Embedding count mismatch: expected {len(texts_to_embed)}, got {len(embeddings_result)}"
+                )
 
-            valid_embeddings_count = min(len(embeddings_result), len(texts_to_embed))
-            for i in range(valid_embeddings_count):
+            for i, emb in enumerate(embeddings_result):
                 original_chunk_index = chunk_indices_map[i]
-                chunks_data[original_chunk_index]['embedding'] = embeddings_result[i]
+                chunks_data[original_chunk_index]['embedding'] = emb
                 chunks_data[original_chunk_index]['embedding_model'] = self.openai_client.embedding_model
 
-            print(f"Successfully added embeddings to {valid_embeddings_count} chunks.")
+            print(f"Successfully generated and assigned embeddings for all {len(chunks_data)} chunks.")
             return chunks_data
         except Exception as e:
-             print(f"Error generating embeddings: {e}")
-             return chunks_data
+            print(f"Error generating embeddings: {e}")
+            raise RuntimeError(f"Embedding generation failed: {str(e)}") from e

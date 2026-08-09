@@ -2,14 +2,12 @@
 
 import time
 try:
-    import fitz as pymupdf  # type: ignore[import-not-found]  # PyMuPDF canonical import
-except Exception:  # pragma: no cover
-    import pymupdf  # type: ignore[import-not-found]
+    import fitz as pymupdf
+    _PYMUPDF_FILE_DATA_ERROR = getattr(pymupdf, "FileDataError", Exception)
+except Exception:
+    pymupdf = None
+    _PYMUPDF_FILE_DATA_ERROR = Exception
 
-try:  # pragma: no cover
-    _PYMUPDF_FILE_DATA_ERROR = pymupdf.FileDataError  # type: ignore[attr-defined]
-except Exception:  # pragma: no cover
-    _PYMUPDF_FILE_DATA_ERROR = None
 import concurrent.futures
 from typing import Optional, Dict, Any, IO
 from google.genai import types
@@ -18,13 +16,18 @@ from src.prompts.prompt_manager import PromptManager
 import re
 from src.config.gemini_config import MULTIMODAL_MODEL
 import os
-
 from src.models.ingestion_models import ParsingResult
+import base64
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
+
 
 class FinancialDocParser:
     """
     Parses PDF financial documents into markdown using a multimodal AI.
-    Handles file buffers and includes API retry logic.
+    Supports decoupled vision providers (Qwen 3.7 Plus, OpenAI Vision, Gemini).
     """
 
     PDF_ANNOTATION_PROMPT = PromptManager.get_prompt(
@@ -33,10 +36,45 @@ class FinancialDocParser:
 
     def __init__(self, gemini_client: Optional[GeminiClient] = None):
         """
-        Initialize parser with a Gemini client.
+        Initialize parser with configured vision provider (Qwen, OpenAI, or Gemini).
         """
-        self.gemini_client = gemini_client or GeminiClient()
-        self.multimodal_model = MULTIMODAL_MODEL  # Use model from config
+        self.vision_provider = os.getenv("VISION_PROVIDER", "").strip().lower()
+        if not self.vision_provider:
+            if os.getenv("VISION_BASE_URL") or "qwen" in os.getenv("VISION_MODEL", "").lower():
+                self.vision_provider = "qwen"
+            elif os.getenv("GEMINI_API_KEY"):
+                self.vision_provider = "gemini"
+            else:
+                self.vision_provider = "openai"
+
+        if self.vision_provider in ("qwen", "openai", "custom"):
+            default_model = "qwen-3.7-plus" if self.vision_provider == "qwen" else "gpt-4o-mini"
+            self.vision_model = os.getenv("VISION_MODEL", default_model)
+            self.vision_api_key = (
+                os.getenv("VISION_API_KEY")
+                or os.getenv("OPENAI_API_KEY")
+                or os.getenv("GEMINI_API_KEY")
+            )
+            self.vision_base_url = (
+                os.getenv("VISION_BASE_URL")
+                or os.getenv("OPENAI_BASE_URL")
+                or os.getenv("OPENAI_API_BASE")
+            )
+
+            client_kwargs = {}
+            if self.vision_api_key:
+                client_kwargs["api_key"] = self.vision_api_key
+            if self.vision_base_url:
+                client_kwargs["base_url"] = self.vision_base_url.rstrip("/")
+
+            self.openai_vision_client = OpenAI(**client_kwargs) if OpenAI else None
+            self.gemini_client = None
+        else:
+            self.gemini_client = gemini_client or GeminiClient()
+            self.multimodal_model = os.getenv("VISION_MODEL", os.getenv("GEMINI_CHAT_MODEL", MULTIMODAL_MODEL))
+            self.openai_vision_client = None
+
+
 
 
     def parse_pdf_to_markdown(self, pdf_file: IO[bytes]) -> ParsingResult:
@@ -144,35 +182,61 @@ class FinancialDocParser:
         retry_delay = 10
 
         for attempt in range(max_retries + 1):
-            print(f"{page_identifier}: Annotating (Attempt {attempt + 1}/{max_retries + 1})")
+            print(f"{page_identifier}: Annotating with '{self.vision_provider}' model '{getattr(self, 'vision_model', getattr(self, 'multimodal_model', 'vision'))}' (Attempt {attempt + 1}/{max_retries + 1})")
             try:
-                response = self.gemini_client.client.models.generate_content(
-                    model=self.multimodal_model,
-                    contents=[
-                        types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
-                        self.PDF_ANNOTATION_PROMPT
-                    ]
-                )
-
-                if hasattr(response, 'text') and response.text:
-                    raw = response.text
+                if self.openai_vision_client:
+                    b64_str = base64.b64encode(img_bytes).decode("utf-8")
+                    completion = self.openai_vision_client.chat.completions.create(
+                        model=self.vision_model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": self.PDF_ANNOTATION_PROMPT},
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/png;base64,{b64_str}"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    )
+                    raw = completion.choices[0].message.content or ""
                     m = re.search(r"```(?:markdown)?\s*(.*?)\s*```", raw, re.DOTALL)
                     processed_text = m.group(1).strip() if m else raw.strip()
-                    print(f"{page_identifier}: Annotation successful.")
+                    print(f"{page_identifier}: Vision annotation successful.")
                     return processed_text
-
-                elif hasattr(response, 'prompt_feedback') and response.prompt_feedback and hasattr(response.prompt_feedback, 'block_reason'):
-                     block_reason = response.prompt_feedback.block_reason
-                     print(f"{page_identifier}: Annotation blocked ({block_reason}).")
-                     return f"[Annotation blocked for {page_identifier}: {block_reason}]"
-
-                elif hasattr(response, 'candidates') and response.candidates and len(response.candidates) > 0 and hasattr(response.candidates, 'finish_reason') and response.candidates.finish_reason == types.GenerateContentResponse.Candidate.FinishReason.RECITATION:
-                    print(f"{page_identifier}: Recitation detected - published content not transcribed.")
-                    return f"[Warning: {page_identifier}: Recitation of published content avoided.]"
-
                 else:
-                    print(f"{page_identifier}: Received empty or unexpected AI response format.")
-                    return f"[Error processing {page_identifier}: Unexpected AI response.]"
+                    response = self.gemini_client.client.models.generate_content(
+                        model=self.multimodal_model,
+                        contents=[
+                            types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
+                            self.PDF_ANNOTATION_PROMPT
+                        ]
+                    )
+
+                    if hasattr(response, 'text') and response.text:
+                        raw = response.text
+                        m = re.search(r"```(?:markdown)?\s*(.*?)\s*```", raw, re.DOTALL)
+                        processed_text = m.group(1).strip() if m else raw.strip()
+                        print(f"{page_identifier}: Annotation successful.")
+                        return processed_text
+
+                    elif hasattr(response, 'prompt_feedback') and response.prompt_feedback and hasattr(response.prompt_feedback, 'block_reason'):
+                        block_reason = response.prompt_feedback.block_reason
+                        print(f"{page_identifier}: Annotation blocked ({block_reason}).")
+                        return f"[Annotation blocked for {page_identifier}: {block_reason}]"
+
+                    elif hasattr(response, 'candidates') and response.candidates and len(response.candidates) > 0 and hasattr(response.candidates, 'finish_reason') and response.candidates.finish_reason == types.GenerateContentResponse.Candidate.FinishReason.RECITATION:
+                        print(f"{page_identifier}: Recitation detected - published content not transcribed.")
+                        return f"[Warning: {page_identifier}: Recitation of published content avoided.]"
+
+                    else:
+                        print(f"{page_identifier}: Received empty or unexpected AI response format.")
+                        return f"[Error processing {page_identifier}: Unexpected AI response.]"
+
 
 
             except Exception as e:

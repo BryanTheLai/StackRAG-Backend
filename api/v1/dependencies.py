@@ -8,11 +8,9 @@ from supabase import create_client
 
 # Environment configuration
 load_dotenv()
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://placeholder-project.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY", "placeholder-anon-key")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise RuntimeError("SUPABASE_URL and SUPABASE_ANON_KEY must be set")
 
 # Authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")

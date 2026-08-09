@@ -1,7 +1,8 @@
 # Configuration for Gemini AI models and parameters
 
 # Default chat model for conversational interactions
-DEFAULT_CHAT_MODEL = "gemini-3.1-flash-lite-preview"
+DEFAULT_CHAT_MODEL = "gemini-3.5-lite"
+
 
 # Model used for multimodal (PDF annotation) parsing
 MULTIMODAL_MODEL = "gemini-3.1-flash-lite-preview"

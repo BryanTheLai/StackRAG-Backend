@@ -1,65 +1,26 @@
-from typing import Any, Generator, Dict, List
+from typing import Any, AsyncGenerator, Dict, List, Optional
 import json
+import logging
+import uuid
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from supabase import create_client
-# Add pydantic-ai message imports
-from pydantic_ai.messages import UserPromptPart, SystemPromptPart, TextPart, ToolCallPart, ToolReturnPart, ModelRequest, ModelResponse
 
-from ..dependencies import Session, get_session
+from ..dependencies import Session, get_session, SUPABASE_URL, SUPABASE_KEY
 from src.llm.workflow.react_rag import run_react_rag
-from api.v1.dependencies import SUPABASE_URL, SUPABASE_KEY
 
 
-class MessagePart(BaseModel):
-    content: str
-    timestamp: str | None = None
-    dynamic_ref: Any | None = None
-    part_kind: str  # "system-prompt", "user-prompt", "text"
+logger = logging.getLogger("uvicorn.error")
 
 
-class HistoryTurn(BaseModel):
-    parts: List[MessagePart]
-    instructions: Any | None = None
-    kind: str  # "request" or "response"
-    usage: Dict[str, Any] | None = None
-    model_name: str | None = None
-    timestamp: str | None = None
-    vendor_details: Any | None = None
-    vendor_id: str | None = None
-
-
-class ChatPayload(BaseModel):
-    history: List[HistoryTurn] = Field(
-        ..., description="Complete conversation history including the latest user message."
+class ChatStreamPayload(BaseModel):
+    session_id: Optional[str] = Field(
+        None, description="Optional chat session ID. If omitted, a new session will be created."
     )
-
-# Helper function to convert frontend history to pydantic-ai format
-def convert_history_to_pydantic_ai_format(history: List[HistoryTurn]) -> list:
-    pydantic_ai_history = []
-    for turn in history:
-        parts = []
-        for part_data in turn.parts:
-            # IMPORTANT: Do NOT forward any system prompts coming from the frontend.
-            # The backend constructs the system prompt for each request.
-            if part_data.part_kind == "user-prompt" and part_data.content:
-                parts.append(UserPromptPart(content=part_data.content))
-            elif part_data.part_kind == "text" and part_data.content: # Model text response
-                parts.append(TextPart(content=part_data.content))
-
-        if not parts: # Skip if no valid parts were created for this turn
-            continue
-
-        if turn.kind == "request": # Corresponds to ModelRequest
-            # A ModelRequest includes user prompt (system prompt is injected server-side)
-            pydantic_ai_history.append(ModelRequest(parts=parts))
-        elif turn.kind == "response": # Corresponds to ModelResponse
-            # A ModelResponse typically has one main part (TextPart, ToolCallPart)
-            # For simplicity, assuming the first valid part is the primary one for ModelResponse
-            pydantic_ai_history.append(ModelResponse(parts=parts))
-    return pydantic_ai_history
+    message: str = Field(..., min_length=1, description="The user message to send.")
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -67,39 +28,127 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 @router.post("/stream")
 async def stream_chat_response(
-    payload: ChatPayload,
+    payload: ChatStreamPayload,
     session: Session = Depends(get_session)
 ) -> StreamingResponse:
-    """Stream a chat response using server-sent events via RAG agent."""
-    async def event_generator():
+    """Stream a chat response using server-sent events with server-owned session memory."""
+    user_id = session.user_id
+    token = session.token
+    message_text = payload.message.strip()
+
+    if not message_text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message text cannot be empty."
+        )
+
+    request_id = str(uuid.uuid4())
+
+    async def event_generator() -> AsyncGenerator[str, None]:
         supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        supabase_client.options.headers["Authorization"] = f"Bearer {token}"
+
+        session_id = payload.session_id
+        history: List[Dict[str, Any]] = []
+
         try:
-            # Extract latest user message text
-            # Assuming the last message in history is the current user input
-            # And it's the first part of that message
-            user_input = ""
-            if payload.history and payload.history[-1].parts:
-                 # Find the user-prompt part in the last history turn
-                for part in payload.history[-1].parts:
-                    if part.part_kind == "user-prompt" and part.content:
-                        user_input = part.content
-                        break
-            
-            if not user_input: # Fallback or error if no user input found
-                user_input = "Hello" # Or raise an error
+            if session_id:
+                # Load server-owned session history from database enforcing RLS user ownership
+                res = (
+                    supabase_client.table("chat_sessions")
+                    .select("*")
+                    .eq("id", session_id)
+                    .eq("user_id", user_id)
+                    .execute()
+                )
+                if res.data and len(res.data) > 0:
+                    history = res.data[0].get("history") or []
+                else:
+                    error_json = json.dumps({
+                        "error_code": "SESSION_NOT_FOUND",
+                        "message": "Chat session not found or access denied",
+                        "request_id": request_id
+                    })
+                    yield f"event: message.failed\ndata: {error_json}\n\n"
+                    return
+            else:
+                # Create new session record
+                new_session_id = str(uuid.uuid4())
+                title = message_text[:40] + ("..." if len(message_text) > 40 else "")
+                supabase_client.table("chat_sessions").insert({
+                    "id": new_session_id,
+                    "user_id": user_id,
+                    "title": title,
+                    "history": []
+                }).execute()
+                session_id = new_session_id
 
-            # Convert history to pydantic-ai format
-            # We pass all history *except* the last user message, as that's the new input
-            formatted_history = convert_history_to_pydantic_ai_format(payload.history[:-1])
+            # Emit initial event
+            yield f"event: message.started\ndata: {json.dumps({'request_id': request_id, 'session_id': session_id})}\n\n"
 
-            # Stream responses from RAG agent
-            async for message in run_react_rag(session, supabase_client, user_input, formatted_history):
-                data = json.dumps({"text_chunk": message})
-                yield f"data: {data}\n\n"
-            yield "event: stream_end\ndata: {}\n\n"
+            acc_response = ""
+            citations: List[Dict[str, Any]] = []
+
+            # Stream model & tool events
+            async for event_type, data in run_react_rag(
+                session=session,
+                supabase_client=supabase_client,
+                user_input=message_text,
+                history_turns=history
+            ):
+                if event_type == "delta":
+                    acc_response += data.get("text", "")
+                    yield f"event: message.delta\ndata: {json.dumps({'delta': data.get('text', '')})}\n\n"
+                elif event_type == "tool.started":
+                    yield f"event: tool.started\ndata: {json.dumps(data)}\n\n"
+                elif event_type == "tool.completed":
+                    yield f"event: tool.completed\ndata: {json.dumps(data)}\n\n"
+                elif event_type == "citation.added":
+                    citations.append(data)
+                    yield f"event: citation.added\ndata: {json.dumps(data)}\n\n"
+                elif event_type == "ping":
+                    yield ": ping\n\n"
+
+            # Save updated conversation turns server-side
+            now_iso = datetime.now(timezone.utc).isoformat()
+            user_turn = {
+                "kind": "request",
+                "parts": [{"part_kind": "user-prompt", "content": message_text}],
+                "timestamp": now_iso
+            }
+            assistant_turn = {
+                "kind": "response",
+                "parts": [{"part_kind": "text", "content": acc_response}],
+                "citations": citations,
+                "timestamp": now_iso
+            }
+
+            updated_history = history + [user_turn, assistant_turn]
+
+            supabase_client.table("chat_sessions").update({
+                "history": updated_history,
+                "updated_at": "now()"
+            }).eq("id", session_id).eq("user_id", user_id).execute()
+
+            # Emit message.completed event
+            yield f"event: message.completed\ndata: {json.dumps({'request_id': request_id, 'session_id': session_id, 'citation_count': len(citations)})}\n\n"
+
         except Exception as e:
-            error = json.dumps({"error": str(e)})
-            yield f"event: stream_error\ndata: {error}\n\n"
-            yield "event: stream_end\ndata: {}\n\n"
+            logger.exception("chat_stream_exception request_id=%s session_id=%s", request_id, session_id)
+            error_payload = {
+                "error_code": "CHAT_STREAM_ERROR",
+                "message": "An error occurred while generating the chat response. Please try again.",
+                "request_id": request_id
+            }
+            yield f"event: message.failed\ndata: {json.dumps(error_payload)}\n\n"
 
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
+

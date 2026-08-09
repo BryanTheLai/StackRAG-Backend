@@ -343,6 +343,11 @@ class IngestionPipeline:
             error_msg = f"An unexpected error occurred in the ingestion pipeline: {e}"
             print(error_msg)
             if document_id:
-                 print(f"Attempting to mark document {document_id} as failed...")
-                 self.supabase_service.update_document_status(document_id, "failed")
-            return {"success": False, "message": error_msg, "document_id": document_id}
+                print(f"Marking document {document_id} as failed and rolling back partial artifacts...")
+                try:
+                    self.supabase_service.update_document_status(document_id, "failed")
+                    if storage_path:
+                        self.supabase_service.client.storage.from_("financial-pdfs").remove([storage_path])
+                except Exception as cleanup_err:
+                    print(f"Error during failed ingestion cleanup: {cleanup_err}")
+            return {"success": False, "message": error_msg, "document_id": document_id}

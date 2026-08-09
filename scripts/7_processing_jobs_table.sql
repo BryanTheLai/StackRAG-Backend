@@ -18,10 +18,15 @@ CREATE TABLE public.processing_jobs (
     error_code TEXT, -- Technical error code for debugging (api_key_invalid, file_corrupted, etc)
     retry_count INTEGER DEFAULT 0, -- How many times user retried
     result_data JSONB, -- Store success response
+    lease_until TIMESTAMPTZ, -- Worker lease expiration timestamp
+    last_heartbeat_at TIMESTAMPTZ, -- Last heartbeat from active worker
+    next_attempt_at TIMESTAMPTZ, -- Scheduled timestamp for retry attempts
+    worker_id TEXT, -- Unique ID of the processing worker instance
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     completed_at TIMESTAMPTZ
 );
+
 
 -- Index for fast user queries
 CREATE INDEX idx_processing_jobs_user_id ON public.processing_jobs(user_id);
